@@ -1,5 +1,6 @@
 # SapienGameEngine
 An openGL based game engine with physics support as well as an actor based AI system.
+![Sapien preview](https://github.com/SniperChicken32/SapienGameEngine/blob/master/actors.png)
 
 * Rendering system (complete)
 * Physics support by ReactPhysics3D

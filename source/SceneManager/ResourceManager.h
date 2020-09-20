@@ -908,6 +908,8 @@ namespace SceneManager {
                 // Use of animation cycles
                 if (AssetLoader.GetValueByName("DoAnimationStates", 0) == "true") ActorPtr ->DoAnimationStates = true;
                 
+                ActorPtr ->DirectionOffset = StringToFloat(AssetLoader.GetValueByName("DirectionOffset", 0));
+                
                 // Animation states
                 ActorPtr ->AnimationIdle  = StringToInt(AssetLoader.GetValueByName("AnimationIdle", 0));
                 ActorPtr ->AnimationWalk  = StringToInt(AssetLoader.GetValueByName("AnimationWalk", 0));
@@ -1702,14 +1704,14 @@ namespace SceneManager {
                     if (CollisionMfold == nullptr) return;
                     
                     // Create the collision object
-                    Physics::Transform  Trans = Physics::Transform(Physics::Vector3(0.0, 0.0, 0.0), Physics::Quaternion::identity());
+                    Physics::Transform  Transform = Physics::Transform(Physics::Vector3(0.0, 0.0, 0.0), Physics::Quaternion::identity());
                     
                     // Dynamic
                     RigidBody ->setType( Physics::BodyType::DYNAMIC );
                     
-                    RigidBody ->setMass( 0.48 );
+                    RigidBody ->setMass( 0.85 );
                     
-                    RigidBody ->setLinearDamping ( 0.8 );
+                    RigidBody ->setLinearDamping ( 0.5 );
                     RigidBody ->setAngularDamping( 0.0 );
                     
                     
@@ -1719,11 +1721,11 @@ namespace SceneManager {
                     //
                     // Check collider type
                     // Type 0 - box
-                    if (CollisionMfold ->AssetType == 0) {RigidBody ->addCollider( CollisionMfold ->CollisionBox, Trans );}
+                    if (CollisionMfold ->AssetType == 0) {RigidBody ->addCollider( CollisionMfold ->CollisionBox, Transform );}
                     // Type 1 - sphere
-                    if (CollisionMfold ->AssetType == 1) {RigidBody ->addCollider( CollisionMfold ->CollisionSphere, Trans );}
+                    if (CollisionMfold ->AssetType == 1) {RigidBody ->addCollider( CollisionMfold ->CollisionSphere, Transform );}
                     // Type 2 - capsule
-                    if (CollisionMfold ->AssetType == 2) {RigidBody ->addCollider( CollisionMfold ->CollisionCapsule, Trans );}
+                    if (CollisionMfold ->AssetType == 2) {RigidBody ->addCollider( CollisionMfold ->CollisionCapsule, Transform );}
                     
 #ifdef  LOG_DETAILS_
                     LogString += Strings[0] + strings::SpaceDouble;

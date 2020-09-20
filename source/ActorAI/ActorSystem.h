@@ -7,6 +7,16 @@
 #define ANIMATION_RUN    3
 #define ANIMATION_DEATH  4
 
+#define  STATE_SLEEP   0
+#define  STATE_IDLE    1
+#define  STATE_SEARCH  2
+#define  STATE_ATTACK  3
+#define  STATE_FLEE    4
+
+#define  DECISION_NO_DECISION     0
+#define  DECISION_WALK_TO_POINT   1
+#define  DECISION_RUN_TO_POINT    2
+
 #include "ActorAI/Actor.h"
 #include "ActorAI/CoreAI.h"
 

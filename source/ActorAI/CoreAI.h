@@ -1,12 +1,6 @@
 //
 // AI decision processing
 
-#define  STATE_SLEEP   0
-#define  STATE_IDLE    1
-#define  STATE_SEARCH  2
-#define  STATE_ATTACK  3
-#define  STATE_FLEE    4
-
 namespace ActorAI {
     
     namespace RandomGeneration {
@@ -130,7 +124,7 @@ namespace ActorAI {
     
     
     //
-    // The decision making process starts with this function
+    // The decision making process starts here
     
     void DecisionPipeline(Actor* ActorPtr) {
         
@@ -140,40 +134,201 @@ namespace ActorAI {
         POSITION Position = ActorPtr ->Position;
         ROTATION Rotation = ActorPtr ->Rotation;
         
-        // Get the actors forward angle
-        ROTATION Forward;
-        Forward.x = cos( DegToRad( ActorPtr ->Rotation.x ) + 90.0 ) * 50.0;
-        Forward.y = sin( DegToRad( ActorPtr ->Rotation.y ) - 0.0 ) * 50.0;
-        Forward.z = tan( DegToRad( ActorPtr ->Rotation.z ) );
+        //ActorPtr ->AnimationCurrent = ANIMATION_WALK;
         
+        
+        // Actor states
+        bool IsCurrentlyTravling = false;
+        
+        //
+        // Iterate through the decision list
+        if (ActorPtr ->ActionList.size() < 1) return;
+        
+        for (std::vector<std::string>::iterator it = ActorPtr ->ActionList.begin(); it <= ActorPtr ->ActionList.end(); ++it) {
+            
+            std::string ActionString = *it;
+            
+            // Explode the string
+            int i=0; std::string Strings[50];
+            std::vector<std::string> Array = StringExplode(ActionString, ' ');
+            for (std::vector<std::string>::iterator it = Array.begin(); it != Array.end(); ++it) {std::string String = *it; Strings[i] = String; i++;}
+            
+            
+            // Walk toward point
+            if (Strings[0] == "walk") {
+                
+                // Check current state
+                if (IsCurrentlyTravling == false) {IsCurrentlyTravling = true;
+                    
+                    // Check current state
+                    if (ActorPtr ->AnimationCurrent != ANIMATION_WALK) {
+                        
+                        AnimationCycles::ResetCycle(ActorPtr);
+                        
+                        ActorPtr ->AnimationCurrent = ANIMATION_WALK;
+                        
+                    }
+                    
+                    // Destination point
+                    //POSITION Destination = POSITION(StringToFloat(Strings[1]), StringToFloat(Strings[2]), StringToFloat(Strings[3]));
+                    
+                    
+                    
+                    
+                }
+                
+            }
+            
+            // Run toward point
+            if (Strings[0] == "run") {
+                
+                // Check current state
+                if (IsCurrentlyTravling == false) {IsCurrentlyTravling = true;
+                    
+                    // Check current state
+                    if (ActorPtr ->AnimationCurrent != ANIMATION_WALK) {
+                        
+                        AnimationCycles::ResetCycle(ActorPtr);
+                        
+                        ActorPtr ->AnimationCurrent = ANIMATION_WALK;
+                        
+                    }
+                    
+                    // Destination point
+                    //POSITION Destination = POSITION(StringToFloat(Strings[1]), StringToFloat(Strings[2]), StringToFloat(Strings[3]));
+                    
+                    
+                    
+                    
+                }
+                
+            }
+            
+            /*
+            
+            // Check travel state
+            if (IsCurrentlyWalking == false) {IsCurrentlyWalking = true;
+                
+                
+                
+                
+                // Point toward which we are moving
+                POSITION PointPosition = POSITION(0.0, 0.0, 0.0);
+                
+                // Get direction toward point
+                float PointDirection = AngleBetweenPoints(ActorPtr ->Position, PointPosition);
+                
+                
+                // Walk towards point
+                if (DecisionType = "") {
+                    
+                    // Check current state
+                    if (ActorPtr ->AnimationCurrent != ANIMATION_WALK) {
+                        
+                        AnimationCycles::ResetCycle(ActorPtr);
+                        
+                        ActorPtr ->AnimationCurrent = ANIMATION_WALK;
+                        
+                    }
+                    
+                }
+                
+                // Run towards point
+                if (DecisionType = "") {
+                    
+                    // Check current state
+                    if (ActorPtr ->AnimationCurrent != ANIMATION_RUN) {
+                        
+                        AnimationCycles::ResetCycle(ActorPtr);
+                        
+                        ActorPtr ->AnimationCurrent = ANIMATION_RUN;
+                        
+                    }
+                    
+                }
+                
+                
+                // Generate a random float
+                //float RandomNumber = StringToFloat( IntToString( RandomGeneration::Random(1, 99) ) ) * 0.1f;
+                
+                // Apply the random number
+                //ActorPtr ->Rotation.x += RandomNumber;
+                //if (ActorPtr ->Rotation.x >= 360.0f) {ActorPtr ->Rotation.x -= 360.0f;}
+                
+                // Zero the speed
+                //ActorPtr ->AttachedBody ->setLinearVelocity( Physics::Vector3(0.0,0.0,0.0));
+                
+                
+                
+            }
+            
+            
+            */
+            
+            
+            
+            
+        }
+        
+        
+        
+        /*
+        // Direction
         if (RandomGeneration::Random(1, 250) == 1) {
+            
+            //AnimationCycles::ResetCycle(ActorPtr);
+            //ActorPtr ->AnimationCurrent = ANIMATION_IDLE;
+            
+            // Generate a random float
+            float RandomNumber = StringToFloat( IntToString( RandomGeneration::Random(1, 99) ) ) * 0.1f;
+            
+            // Apply the random number
+            ActorPtr ->Rotation.x += RandomNumber;
+            if (ActorPtr ->Rotation.x >= 360.0f) {ActorPtr ->Rotation.x -= 360.0f;}
+            
+            // Zero the speed
+            ActorPtr ->AttachedBody ->setLinearVelocity( Physics::Vector3(0.0,0.0,0.0));
+            
+        }
+        
+        
+        // Calculate the actors forward angle
+        float DirectionOffset = ActorPtr ->DirectionOffset + 29.9f;
+        ActorPtr ->Forward.x =  cos( Rotation.x + DirectionOffset ) * 3.5f;
+        ActorPtr ->Forward.y = -sin( Rotation.x + DirectionOffset ) * 3.5f;
+        //ActorPtr ->Forward.z =  tan( Rotation.y + DirectionOffset ) * 3.85f;
+        
+        
+        
+        // Apply force to the actor body
+        //ActorPtr ->AttachedBody ->applyForceToCenterOfMass( Force );
+        ActorPtr ->AttachedBody ->setLinearVelocity( ActorPtr ->Forward );
+        
+        
+        
+        
+        if (RandomGeneration::Random(1, 200) == 1) {
             
             AnimationCycles::ResetCycle(ActorPtr);
             ActorPtr ->AnimationCurrent = ANIMATION_IDLE;
             
         }
         
-        if (RandomGeneration::Random(1, 350) == 1) {
+        if (RandomGeneration::Random(1, 300) == 1) {
             
             AnimationCycles::ResetCycle(ActorPtr);
             ActorPtr ->AnimationCurrent = ANIMATION_RUN;
             
         }
         
-        if (RandomGeneration::Random(1, 350) == 1) {
+        if (RandomGeneration::Random(1, 300) == 1) {
             
             AnimationCycles::ResetCycle(ActorPtr);
             ActorPtr ->AnimationCurrent = ANIMATION_WALK;
             
         }
+        */
         
-        // Apply force to the actor body
-        //Force = Physics::Vector3(Forward.x, Forward.z, Forward.y);
-        //ActorPtr ->AttachedBody ->applyForceToCenterOfMass( Force );
-        
-        // Apply rotational torque to the actor body
-        Physics::Vector3 Torque = Physics::Vector3( 80.0, 0.0, 0.0 );
-        ActorPtr ->AttachedBody ->applyTorque( Torque );
         
     }
     

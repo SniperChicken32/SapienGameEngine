@@ -51,16 +51,24 @@ struct Actor {
     
     POSITION Position;
     ROTATION Rotation;
-    ROTATION Forward;
+    Physics::Vector3 Forward;
+    
+    float DirectionOffset;
     
     // AI state
     int State;
+    
+    // Decision task list
+    std::vector<std::string> ActionList;
     
     Actor();
     ~Actor();
     
     // Update this actor
     void Update(void);
+    
+    // Decision processing
+    void AddAction(std::string);
     
 };
 
@@ -111,10 +119,14 @@ Actor :: Actor() {
     
     Position = POSITION(0.0, 0.0, 0.0);
     Rotation = ROTATION(0.0, 0.0, 0.0);
-    Forward  = ROTATION(0.0, 0.0, 0.0);
+    Forward  = Physics::Vector3(0.0, 0.0, 0.0);
+    
+    DirectionOffset = 0.0;
     
     // Idle state
-    State = 1;
+    State = STATE_IDLE;
+    
+    ActionList.clear();
     
 }
 Actor :: ~Actor() {
@@ -142,8 +154,8 @@ void Actor :: Update(void) {
         Physics::Vector3 EntityPosition = EntityTransform.getPosition();
         this ->Position = glm::vec3(EntityPosition.x, EntityPosition.y, EntityPosition.z);
         
-        Physics::Vector3 EntityRotation = EntityQuaternion.getVectorV();
-        this ->Rotation = glm::vec3(EntityRotation.x, EntityRotation.y, EntityRotation.z);
+        //Physics::Vector3 EntityRotation = EntityQuaternion. ();
+        //this ->Rotation = glm::vec3(EntityRotation.x, EntityRotation.y, EntityRotation.z);
         
     }
     
@@ -172,6 +184,12 @@ void Actor :: Update(void) {
         this ->LegLEntity  ->Position = this ->Position + this->LegLOffset;
         this ->LegLEntity  ->Rotation = this ->Rotation;
     }
+    
+}
+
+void Actor :: AddAction(std::string ActionString) {
+    
+    ActionList.push_back( ActionString );
     
 }
 

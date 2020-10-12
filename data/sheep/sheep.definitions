@@ -1,0 +1,18 @@
+define_collider  collSheep 3  box  1.0 2.0 1.7
+
+define_material  data/sheep/head.material
+define_material  data/sheep/torso.material
+define_material  data/sheep/limb.material
+
+define_mesh  data/sheep/head.obj
+define_mesh  data/sheep/torso.obj
+define_mesh  data/sheep/limb.obj
+
+link   SheepHead  matSheepHead  PerVertex
+link   SheepTorso matSheepTorso PerVertex
+link   SheepLimb  matSheepLimb  PerVertex
+
+define_component HealthComponent  Health  100.0
+
+define_actor  data/sheep/basic.actor  HealthComponent
+

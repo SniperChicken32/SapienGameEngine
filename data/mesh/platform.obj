@@ -1,0 +1,33 @@
+# Created with Anim8or 1.00
+# Object "object01":
+
+mtllib platform.mtl
+
+# Shape "Platform":
+g Platform
+# No. points 4:
+v -5 0 5
+v -5 0 -5
+v 5 0 -5
+v 5 0 5
+
+# No. normals 5:
+vn 0 1 0
+vn 0 1 0
+vn 0 1 0
+vn 0 1 0
+vn 0 1 0
+
+# No. texture coordinates 4:
+vt -2.80018 -2.78782
+vt -2.80018 3.78782
+vt 3.80018 3.78782
+vt 3.80018 -2.78782
+
+# No. faces 1:
+
+usemtl ___default___
+
+f 4/4/5 3/3/4 2/2/3 1/1/2
+
+# End of Object "object01"

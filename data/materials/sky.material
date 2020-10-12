@@ -1,0 +1,13 @@
+define_asset matSky
+filter none
+
+ambient 0.87 0.87 0.87
+diffuse 0.0 0.0 0.0
+specular 0.0 0.0 0.0
+
+shininess 0.0
+specularmul 0.0
+
+disable lighting
+
+texture data\bitmaps\sky.bmp

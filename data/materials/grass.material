@@ -1,0 +1,11 @@
+define_asset matGrass
+filter aniso
+
+ambient 0.1 0.1 0.1
+diffuse 0.087 0.087 0.087
+specular 0.1 0.1 0.1
+
+shininess 4.0
+specularmul 8.0
+
+texture data\bitmaps\grass.bmp

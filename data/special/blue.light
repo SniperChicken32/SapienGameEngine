@@ -1,0 +1,9 @@
+define_asset ltBlue
+Type POINT
+
+Diffuse 0.0 0.0 0.87
+Specular 0.01 0.01 0.01
+
+Focus 0.1
+Range 50.0
+Intensity 0.5

@@ -1,0 +1,11 @@
+define_asset matLeafy
+filter aniso
+
+ambient 0.3 0.3 0.3
+diffuse 0.87 0.87 0.87
+specular 0.1 0.1 0.1
+
+shininess 8.0
+specularmul 32.0
+
+texture data\bitmaps\leafy.bmp

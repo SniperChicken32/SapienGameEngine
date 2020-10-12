@@ -1,0 +1,7 @@
+//
+// Colliders
+
+define_collider collPlatform 1  box    25.0  25.0  1.0
+
+define_collider collBarrel  2  box   1.2 1.2 1.35
+

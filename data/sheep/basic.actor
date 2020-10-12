@@ -1,0 +1,32 @@
+define_asset actorBasic
+
+Speed 2.75 4.5
+
+DoAnimationStates  true
+
+DirectionOffset  90.0
+
+LimbSwingRangeWalk  0.3
+LimbSwingRateWalk   0.02
+LimbSwingRangeRun  0.8
+LimbSwingRateRun   0.08
+
+AnimationIdle  0
+AnimationWalk  2
+AnimationRun   3
+AnimationDeath 4
+
+Head  SheepHead
+Torso SheepTorso
+ArmR  SheepLimb
+ArmL  SheepLimb
+LegR  SheepLimb
+LegL  SheepLimb
+
+HeadOffset   0.0  1.8  0.75
+TorsoOffset  0.0  0.0   0.0
+ArmROffset   0.45  1.15 -0.5
+ArmLOffset  -0.45  1.15 -0.5
+LegROffset   0.45 -1.15 -0.5
+LegLOffset  -0.45 -1.15 -0.5
+

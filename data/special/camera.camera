@@ -1,0 +1,19 @@
+define_asset Projector
+
+MouseLook 0
+CamHeight 7.0
+
+FoV 50.0
+Aspect 1.33
+Near 1.0
+Far 100000000.0
+
+MouseSensitivityYaw 0.000045
+MouseSensitivityPitch 0.00004
+
+MouseLimitPitchMin -0.027
+MouseLimitPitchMax  0.027
+
+MouseLimitYawMin -1.0
+MouseLimitYawMax  1.0
+

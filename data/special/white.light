@@ -1,0 +1,9 @@
+define_asset ltWhite
+Type POINT
+
+Diffuse 0.80 0.81 0.82
+Specular 0.01 0.01 0.01
+
+Focus 0.25
+Range 50.0
+Intensity 0.7

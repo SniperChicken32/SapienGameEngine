@@ -1,0 +1,40 @@
+// Define a camera before the camera physics
+define_camera         data/special/camera.camera
+
+// Physics                 Starting position   Collider scale     Mass & Damping       Speed & Jump velocity
+define_camera_controller   0.0 0.0 5.0         2.5  2.5  4.5      4.2  0.8  1.0       2.7  1.5
+
+
+// Assets
+define_shader  data/materials/PerVertex.shader
+//define_shader  data/materials/PerPixel.shader
+
+define_material  data/materials/sky.material
+define_material  data/materials/grass.material
+define_material  data/materials/barrel.material
+
+define_mesh  data/mesh/platform.obj
+define_mesh  data/mesh/layer.obj
+define_mesh  data/mesh/skysphere.obj
+define_mesh  data/mesh/barrel.obj
+define_mesh  data/mesh/box.obj
+
+// Lights
+define_light   data/special/short.light
+define_light   data/special/white.light
+define_light   data/special/blue.light
+
+// Emitter
+define_emitter  data/special/spray.emitter
+
+
+
+// Asset chains
+link   Platform   matGrass  PerVertex
+link   meshLayer  matGrass  PerVertex
+link   Barrel     matBarrel PerVertex
+link   Box        matBarrel PerVertex
+link   SkySphere  matSky    PerVertex
+
+define_sky   SkySphere
+

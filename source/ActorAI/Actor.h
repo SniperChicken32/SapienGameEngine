@@ -6,9 +6,12 @@ struct Actor {
     std::string Name;
     std::string OriginalName;
     
-    // States
+    // Actor states
     bool IsActive;
     bool DoAnimationStates;
+    
+    // AI states
+    bool IsAvoiding;
     
     Physics::RigidBody* AttachedBody;
     
@@ -53,12 +56,12 @@ struct Actor {
     ROTATION Rotation;
     Physics::Vector3 Forward;
     
+    float SpeedWalk;
+    float SpeedRun;
+    
     float DirectionOffset;
     
-    // AI state
-    int State;
-    
-    // Decision task list
+    // Action task list
     std::vector<std::string> ActionList;
     
     Actor();
@@ -69,6 +72,7 @@ struct Actor {
     
     // Decision processing
     void AddAction(std::string);
+    void ClearActions(void);
     
 };
 
@@ -78,6 +82,7 @@ Actor :: Actor() {
     
     IsActive = false;
     DoAnimationStates = false;
+    IsAvoiding = false;
     
     AttachedBody = nullptr;
     
@@ -121,10 +126,10 @@ Actor :: Actor() {
     Rotation = ROTATION(0.0, 0.0, 0.0);
     Forward  = Physics::Vector3(0.0, 0.0, 0.0);
     
-    DirectionOffset = 0.0;
+    SpeedWalk = 0.0;
+    SpeedRun = 0.0;
     
-    // Idle state
-    State = STATE_IDLE;
+    DirectionOffset = 0.0;
     
     ActionList.clear();
     
@@ -187,9 +192,7 @@ void Actor :: Update(void) {
     
 }
 
-void Actor :: AddAction(std::string ActionString) {
-    
-    ActionList.push_back( ActionString );
-    
-}
+void Actor :: AddAction(std::string ActionString) {ActionList.push_back( ActionString );}
+
+void Actor :: ClearActions(void) {ActionList.clear();}
 

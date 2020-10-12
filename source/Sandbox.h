@@ -198,10 +198,15 @@ void Sandbox :: InputCapture(float CurrentUnitsPerSecond) {
                 ShowCursor(true);
                 Renderer ->CurrentCamera ->EnableMouseLook(false);
                 
+                Renderer ->CurrentCamera ->AttachedBody ->enableGravity(false);
+                
             } else {
                 
                 ShowCursor(false);
                 Renderer ->CurrentCamera ->EnableMouseLook(true);
+                
+                //Renderer ->CurrentCamera ->AttachedBody ->enableGravity(true);
+                Renderer ->CurrentCamera ->AttachedBody ->enableGravity(false);
                 
             }
             
@@ -254,38 +259,17 @@ void Sandbox :: InputCapture(float CurrentUnitsPerSecond) {
                 
             }
             
-            /*
-            
-            // Jump
             if (InputSystem::Input ->CheckKeyCurrent(VK_R))  {
                 
-                if (!JumpReset) {JumpReset = true;
-                    
-                    JumpState = true;
-                    JumpCount = 0.0;
-                    
-                    Physics::RigidBody* CurrentRigidBody = Renderer ->CurrentCamera ->AttachedBody;
-                    
-                    // Get jump speed by time
-                    float CurrentJump = JumpSpeed * CurrentUnitsPerSecond;
-                    
-                    // Get current velocity
-                    Physics::Vector3 CurrentVelocity = CurrentRigidBody ->getLinearVelocity();
-                    
-                    CurrentVelocity.z = CurrentJump;
-                    
-                    // Apply velocity
-                    CurrentRigidBody ->setLinearVelocity( CurrentVelocity );
-                    
-                }
+                Direction += ROTATION(0.0, 0.0, CurrentSpeed);
                 
             }
             
-            // Reset jump
-            if (InputSystem::Input ->CheckKeyReleased(VK_R))  { JumpReset = false; }
-            
-            //if (InputSystem::Input ->CheckKeyCurrent(VK_F))  { Direction.r = -CurrentJump; }
-            */
+            if (InputSystem::Input ->CheckKeyCurrent(VK_F))  {
+                
+                Direction -= ROTATION(0.0, 0.0, CurrentSpeed);
+                
+            }
             
             // Apply force to camera body
             Physics::Vector3 Force = Physics::Vector3(Direction.x, Direction.y, Direction.z);
@@ -294,6 +278,9 @@ void Sandbox :: InputCapture(float CurrentUnitsPerSecond) {
         }
         
     }
+    
+    
+    
     
     
     //

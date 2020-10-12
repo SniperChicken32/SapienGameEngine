@@ -107,6 +107,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     // Debug rendering
     PhysicsWorld ->setIsDebugRenderingEnabled(true);
     
+    // Create and register our custom event listener
+    SceneManager::PhysicsManagement::EventListener listener;
+    PhysicsWorld ->setEventListener(&listener);
+    
     
     //
     // Initiate input system and scene manager

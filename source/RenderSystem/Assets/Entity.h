@@ -4,15 +4,14 @@
 struct Entity {
     
     std::string Name;
+    std::string ColliderName;
+    std::string FilePath;
     
     bool  IsActive;
     bool  IsRendered;
     bool  UseAutoTrack;
     bool  IsStatic;
     bool  IsOverlay;
-    
-    std::string ColliderName;
-    std::string FilePath;
     
     double RenderDistance;
     
@@ -94,7 +93,7 @@ struct Entity {
     }
     
     // Update
-    void  Update(float);
+    void  Update(void);
     void  Activate(void);
     void  Deactivate(void);
     
@@ -103,6 +102,10 @@ struct Entity {
 Entity :: Entity() {
     
     Name = "";
+    ColliderName = "";
+    
+    // For saving
+    FilePath = "";
     
     // Initial state
     IsActive       = true;
@@ -110,11 +113,6 @@ Entity :: Entity() {
     UseAutoTrack   = false;
     IsStatic       = false;
     IsOverlay      = false;
-    
-    ColliderName = "";
-    
-    // For saving
-    FilePath = "";
     
     // Render settings
     RenderDistance    = 300.0;
@@ -149,7 +147,7 @@ Entity :: ~Entity() {
 }
 
 // Update attachments
-void Entity :: Update(float UnitsPerSecond) {
+void Entity :: Update(void) {
     
     // Update our position to the rigid body
     if (AttachedBody != nullptr) {
@@ -173,6 +171,34 @@ void Entity :: Update(float UnitsPerSecond) {
         
         LightListPtr ->Position = Position;
         LightListPtr ->Rotation = Rotation;
+        
+    }
+    
+}
+
+// Activate the entity
+void Entity :: Activate(void) {
+    
+    Light* LightListPtr;
+    for (std::vector<Light*>::iterator it = this ->LightList.begin(); it != this ->LightList.end(); ++it) {
+        
+        LightListPtr = *it;
+        
+        LightListPtr ->IsActive = true;
+        
+    }
+    
+}
+
+// Deactivate the entity
+void Entity :: Deactivate(void) {
+    
+    Light* LightListPtr;
+    for (std::vector<Light*>::iterator it = this ->LightList.begin(); it != this ->LightList.end(); ++it) {
+        
+        LightListPtr = *it;
+        
+        LightListPtr ->IsActive = false;
         
     }
     

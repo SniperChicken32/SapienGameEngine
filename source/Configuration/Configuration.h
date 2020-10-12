@@ -16,10 +16,10 @@ const std::string EVENT_LOG_FILENAME = "event_log.txt";
 
 //
 // Console window output
-//#define  SHOW_CONSOLE_
+#define  SHOW_CONSOLE_
 //#define  CONSOLE_RENDER_TIMING_
 //#define  CONSOLE_CHECK_ALLOCATIONS_
-
+#define  CONSOLE_CHECK_COLLISIONS_
 
 
 //
@@ -30,9 +30,6 @@ const std::string EVENT_LOG_FILENAME = "event_log.txt";
 #define  ITERATER_VELOCITY_SOLVER  10
 
 
-
-
-
 //
 // Render settings
 
@@ -40,7 +37,7 @@ const std::string EVENT_LOG_FILENAME = "event_log.txt";
 #define  RENDER_FRAME_RATE    120.0
 
 // Maximum number of lights to be sampled by the shader per frame.
-#define  MAX_LIGHT_COUNT      16
+#define  MAX_LIGHT_COUNT      50
 
 // Maximum number of instances per batch
 #define  MAX_INSTANCE_COUNT   50
@@ -50,9 +47,6 @@ const std::string EVENT_LOG_FILENAME = "event_log.txt";
 //   GL_RGBA GL_RGBA2 GL_RGBA4 GL_RGBA8 GL_RGBA12 GL_RGBA16
 #define PIXEL_LAYOUT_INTERNAL_   GL_RGBA
 #define PIXEL_LAYOUT_            GL_RGB
-
-
-
 
 
 
@@ -68,4 +62,5 @@ const std::string EVENT_LOG_FILENAME = "event_log.txt";
 
 // Platform specific functions
 #include "Configuration/Platform.h"
+
 

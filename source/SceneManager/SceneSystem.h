@@ -308,6 +308,8 @@ namespace SceneManager {
             
         }
         
+        SceneList.clear();
+        
     }
     
     void   SceneSystem :: ClearAllScenes(void) {

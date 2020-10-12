@@ -3,6 +3,44 @@
 
 namespace ActorAI {
     
+    // World ray cast callback
+    class MyCallbackClass : public Physics::RaycastCallback {
+        
+        public: 
+        
+        virtual Physics::decimal notifyRaycastHit(const Physics::RaycastInfo& info) { 
+            
+            Physics::Vector3 worldPoint  = info.worldPoint;
+            Physics::Vector3 worldNormal = info.worldNormal;
+            
+            // Display the world hit point coordinates 
+            //std::cout << "Hit: " << worldPoint.x << "  " << worldPoint.y << "  " << worldPoint.z << std::endl;
+            
+            
+            /// Fraction distance of the hit point between point1 and point2 of the ray
+            /// The hit point "p" is such that p = point1 + hitFraction * (point2 - point1)
+            float hitFraction = info.hitFraction;
+            
+            /// Mesh subpart index that has been hit (only used for triangles mesh and -1 otherwise)
+            int meshSubpart = info.meshSubpart;
+            
+            /// Hit triangle index (only used for triangles mesh and -1 otherwise)
+            int triangleIndex = info.triangleIndex;
+            
+            /// Pointer to the hit collision body
+            Physics::CollisionBody* body = info.body;
+            
+            /// Pointer to the hit collider
+            Physics::Collider* collider = info.collider;
+            
+            
+            // Return a fraction of 1.0 to gather all hits 
+            return Physics::decimal(1.0); 
+        }
+        
+    };
+    
+    
     namespace RandomGeneration {
         
         // Generate random number between given range
@@ -13,20 +51,6 @@ namespace ActorAI {
     // Path-finding and scene query
     namespace PathFinding {
         
-        // Ray cast between two points
-        bool RayCastBetweenPoints(Physics::Vector3 StartPoint, Physics::Vector3 EndPoint, Physics::Collider* ColliderPtr) {
-        
-        // Create the ray 
-        Physics::Ray ray(StartPoint, EndPoint);
-        
-        // Create the ray cast info object for the results
-        Physics::RaycastInfo raycastInfo;
-        
-        // Test casting against a rigid body`s collider
-        if (ColliderPtr ->raycast(ray, raycastInfo)) return true;
-        
-        return false;
-    }
         
     }
     
@@ -119,32 +143,59 @@ namespace ActorAI {
             
         }
         
+        
+        // Returns true if the animation state is already set
+        bool SetAnimationState(Actor* ActorPtr, int AnimState) {
+            
+            // Check current state
+            if (ActorPtr ->AnimationCurrent != AnimState) {
+                
+                // Reset the animation cycle
+                AnimationCycles::ResetCycle(ActorPtr);
+                ActorPtr ->AnimationCurrent = AnimState;
+                
+                return false;
+            }
+            
+            return true;
+        }
+        
     }
     
     
-    
     //
-    // The decision making process starts here
+    // The decision making process
     
     void DecisionPipeline(Actor* ActorPtr) {
-        
-        Physics::Vector3 Force;
         
         // Get actor transforms
         POSITION Position = ActorPtr ->Position;
         ROTATION Rotation = ActorPtr ->Rotation;
         
-        //ActorPtr ->AnimationCurrent = ANIMATION_WALK;
-        
-        
-        // Actor states
+        // Low level states
         bool IsCurrentlyTravling = false;
         
+        // Generate a random position to walk toward
+        if (ActorPtr ->ActionList.size() == 0) { if (RandomGeneration::Random(0, 100) == 1) {
+            
+            float x = (StringToFloat( IntToString( RandomGeneration::Random(0, 10000) ) ) * 0.0025);
+            float y = (StringToFloat( IntToString( RandomGeneration::Random(0, 10000) ) ) * 0.0025);
+            
+            std::string ActionString = "walk " + FloatToString(x) + " " + FloatToString(y);
+            
+            ActorPtr ->AddAction( ActionString );
+            
+        }}
+        
         //
-        // Iterate through the decision list
+        // Iterate through the action list
         if (ActorPtr ->ActionList.size() < 1) return;
         
-        for (std::vector<std::string>::iterator it = ActorPtr ->ActionList.begin(); it <= ActorPtr ->ActionList.end(); ++it) {
+        for (std::vector<std::string>::iterator it = ActorPtr ->ActionList.begin(); it != ActorPtr ->ActionList.end(); ++it) {
+            
+            // Minimum distance threshold
+            float RayHeight   = 1.7f;
+            float MinDistance = 5.0f;
             
             std::string ActionString = *it;
             
@@ -153,29 +204,63 @@ namespace ActorAI {
             std::vector<std::string> Array = StringExplode(ActionString, ' ');
             for (std::vector<std::string>::iterator it = Array.begin(); it != Array.end(); ++it) {std::string String = *it; Strings[i] = String; i++;}
             
-            
             // Walk toward point
             if (Strings[0] == "walk") {
                 
                 // Check current state
-                if (IsCurrentlyTravling == false) {IsCurrentlyTravling = true;
+                if (IsCurrentlyTravling == true) continue;
+                
+                IsCurrentlyTravling = true;
+                
+                // Check current state
+                AnimationCycles::SetAnimationState(ActorPtr, ANIMATION_WALK);
+                
+                // Destination point
+                POSITION Destination = POSITION(StringToFloat(Strings[1]), StringToFloat(Strings[2]), StringToFloat(Strings[3]));
+                
+                // Check if we have arrived at our destination
+                if (glm::distance( Position, Destination ) < MinDistance) {
                     
-                    // Check current state
-                    if (ActorPtr ->AnimationCurrent != ANIMATION_WALK) {
-                        
-                        AnimationCycles::ResetCycle(ActorPtr);
-                        
-                        ActorPtr ->AnimationCurrent = ANIMATION_WALK;
-                        
-                    }
+                    // Reset the animation cycle
+                    AnimationCycles::SetAnimationState(ActorPtr, ANIMATION_IDLE);
                     
-                    // Destination point
-                    //POSITION Destination = POSITION(StringToFloat(Strings[1]), StringToFloat(Strings[2]), StringToFloat(Strings[3]));
+                    // Zero the speed
+                    ActorPtr ->AttachedBody ->setLinearVelocity( Physics::Vector3(0.0,0.0,0.0));
                     
-                    
-                    
-                    
+                    ActorPtr ->ActionList.erase(it);
+                    break;
                 }
+                
+                // Point toward which we are moving
+                float Angle = AngleBetweenPoints(Position, Destination);
+                ActorPtr ->Rotation.x = Angle;
+                
+                // Get speed and orientation
+                float Speed      = ActorPtr ->SpeedWalk;
+                float Direction  = Angle + ActorPtr ->DirectionOffset + 29.9f;
+                
+                // Calculate the forward angle
+                ActorPtr ->Forward.x =  cos( Direction ) * Speed;
+                ActorPtr ->Forward.y = -sin( Direction ) * Speed;
+                
+                // Apply force to the actor body
+                //ActorPtr ->AttachedBody ->applyForceToCenterOfMass( ActorPtr ->Forward );
+                ActorPtr ->AttachedBody ->setLinearVelocity( ActorPtr ->Forward );
+                
+                
+                //
+                // Obstacle avoidance
+                
+                // Find start and end points for the ray
+                Physics::Vector3 Start = Physics::Vector3(Position.x, Position.y, RayHeight);
+                Physics::Vector3 End   = Physics::Vector3(Destination.x, Destination.y, RayHeight);
+                
+                // Create the ray
+                Physics::Ray ray(Start, End);
+                
+                // Test casting against a rigid body`s collider
+                MyCallbackClass CallbackObject;
+                PhysicsWorld ->raycast(ray, &CallbackObject);
                 
             }
             
@@ -183,152 +268,63 @@ namespace ActorAI {
             if (Strings[0] == "run") {
                 
                 // Check current state
-                if (IsCurrentlyTravling == false) {IsCurrentlyTravling = true;
+                if (IsCurrentlyTravling == true) continue;
+                
+                IsCurrentlyTravling = true;
+                
+                // Check current state
+                AnimationCycles::SetAnimationState(ActorPtr, ANIMATION_RUN);
+                
+                // Destination point
+                POSITION Destination = POSITION(StringToFloat(Strings[1]), StringToFloat(Strings[2]), StringToFloat(Strings[3]));
+                
+                // Check if we have arrived at our destination
+                if (glm::distance( Position, Destination ) < MinDistance) {
                     
-                    // Check current state
-                    if (ActorPtr ->AnimationCurrent != ANIMATION_WALK) {
-                        
-                        AnimationCycles::ResetCycle(ActorPtr);
-                        
-                        ActorPtr ->AnimationCurrent = ANIMATION_WALK;
-                        
-                    }
+                    // Reset the animation cycle
+                    AnimationCycles::SetAnimationState(ActorPtr, ANIMATION_IDLE);
                     
-                    // Destination point
-                    //POSITION Destination = POSITION(StringToFloat(Strings[1]), StringToFloat(Strings[2]), StringToFloat(Strings[3]));
+                    // Zero the speed
+                    ActorPtr ->AttachedBody ->setLinearVelocity( Physics::Vector3(0.0,0.0,0.0));
                     
-                    
-                    
-                    
+                    ActorPtr ->ActionList.erase(it);
+                    break;
                 }
-                
-            }
-            
-            /*
-            
-            // Check travel state
-            if (IsCurrentlyWalking == false) {IsCurrentlyWalking = true;
-                
-                
-                
                 
                 // Point toward which we are moving
-                POSITION PointPosition = POSITION(0.0, 0.0, 0.0);
+                float Angle = AngleBetweenPoints(Position, Destination);
+                ActorPtr ->Rotation.x = Angle;
                 
-                // Get direction toward point
-                float PointDirection = AngleBetweenPoints(ActorPtr ->Position, PointPosition);
+                // Get speed and orientation
+                float Speed      = ActorPtr ->SpeedRun;
+                float Direction  = Angle + ActorPtr ->DirectionOffset + 29.9f;
                 
+                // Calculate the forward angle
+                ActorPtr ->Forward.x =  cos( Direction ) * Speed;
+                ActorPtr ->Forward.y = -sin( Direction ) * Speed;
                 
-                // Walk towards point
-                if (DecisionType = "") {
-                    
-                    // Check current state
-                    if (ActorPtr ->AnimationCurrent != ANIMATION_WALK) {
-                        
-                        AnimationCycles::ResetCycle(ActorPtr);
-                        
-                        ActorPtr ->AnimationCurrent = ANIMATION_WALK;
-                        
-                    }
-                    
-                }
-                
-                // Run towards point
-                if (DecisionType = "") {
-                    
-                    // Check current state
-                    if (ActorPtr ->AnimationCurrent != ANIMATION_RUN) {
-                        
-                        AnimationCycles::ResetCycle(ActorPtr);
-                        
-                        ActorPtr ->AnimationCurrent = ANIMATION_RUN;
-                        
-                    }
-                    
-                }
+                // Apply force to the actor body
+                //ActorPtr ->AttachedBody ->applyForceToCenterOfMass( ActorPtr ->Forward );
+                ActorPtr ->AttachedBody ->setLinearVelocity( ActorPtr ->Forward );
                 
                 
-                // Generate a random float
-                //float RandomNumber = StringToFloat( IntToString( RandomGeneration::Random(1, 99) ) ) * 0.1f;
+                //
+                // Obstacle avoidance
                 
-                // Apply the random number
-                //ActorPtr ->Rotation.x += RandomNumber;
-                //if (ActorPtr ->Rotation.x >= 360.0f) {ActorPtr ->Rotation.x -= 360.0f;}
+                // Find start and end points for the ray
+                Physics::Vector3 Start = Physics::Vector3(Position.x, Position.y, Position.z);
+                Physics::Vector3 End   = Physics::Vector3(Destination.x, Destination.y, Destination.z);
                 
-                // Zero the speed
-                //ActorPtr ->AttachedBody ->setLinearVelocity( Physics::Vector3(0.0,0.0,0.0));
+                // Create the ray
+                Physics::Ray ray(Start, End);
                 
-                
+                // Test casting against a rigid body`s collider
+                MyCallbackClass CallbackObject;
+                PhysicsWorld ->raycast(ray, &CallbackObject);
                 
             }
             
-            
-            */
-            
-            
-            
-            
         }
-        
-        
-        
-        /*
-        // Direction
-        if (RandomGeneration::Random(1, 250) == 1) {
-            
-            //AnimationCycles::ResetCycle(ActorPtr);
-            //ActorPtr ->AnimationCurrent = ANIMATION_IDLE;
-            
-            // Generate a random float
-            float RandomNumber = StringToFloat( IntToString( RandomGeneration::Random(1, 99) ) ) * 0.1f;
-            
-            // Apply the random number
-            ActorPtr ->Rotation.x += RandomNumber;
-            if (ActorPtr ->Rotation.x >= 360.0f) {ActorPtr ->Rotation.x -= 360.0f;}
-            
-            // Zero the speed
-            ActorPtr ->AttachedBody ->setLinearVelocity( Physics::Vector3(0.0,0.0,0.0));
-            
-        }
-        
-        
-        // Calculate the actors forward angle
-        float DirectionOffset = ActorPtr ->DirectionOffset + 29.9f;
-        ActorPtr ->Forward.x =  cos( Rotation.x + DirectionOffset ) * 3.5f;
-        ActorPtr ->Forward.y = -sin( Rotation.x + DirectionOffset ) * 3.5f;
-        //ActorPtr ->Forward.z =  tan( Rotation.y + DirectionOffset ) * 3.85f;
-        
-        
-        
-        // Apply force to the actor body
-        //ActorPtr ->AttachedBody ->applyForceToCenterOfMass( Force );
-        ActorPtr ->AttachedBody ->setLinearVelocity( ActorPtr ->Forward );
-        
-        
-        
-        
-        if (RandomGeneration::Random(1, 200) == 1) {
-            
-            AnimationCycles::ResetCycle(ActorPtr);
-            ActorPtr ->AnimationCurrent = ANIMATION_IDLE;
-            
-        }
-        
-        if (RandomGeneration::Random(1, 300) == 1) {
-            
-            AnimationCycles::ResetCycle(ActorPtr);
-            ActorPtr ->AnimationCurrent = ANIMATION_RUN;
-            
-        }
-        
-        if (RandomGeneration::Random(1, 300) == 1) {
-            
-            AnimationCycles::ResetCycle(ActorPtr);
-            ActorPtr ->AnimationCurrent = ANIMATION_WALK;
-            
-        }
-        */
-        
         
     }
     

@@ -454,9 +454,9 @@ bool     RenderSystem :: DestroyEntity(Entity* EntityPtr) {
         if (EntityPtr == EntityListPtr) {
             
             // Clear lights
-            for (std::vector<Light*>::iterator it = EntityPtr ->LightList.begin(); it != EntityPtr ->LightList.end(); ++it) {
+            for (std::vector<Light*>::iterator itb = EntityPtr ->LightList.begin(); itb != EntityPtr ->LightList.end(); ++itb) {
                 
-                Light* LightPtr = *it;
+                Light* LightPtr = *itb;
                 
                 this ->DestroyLight(LightPtr);
                 
@@ -935,7 +935,7 @@ void RenderSystem :: RefreshRenderQueue(void) {
 }
 
 void RenderSystem :: RefreshLightQueue(void) {
-    int i=0;
+    
     double RenderDistance;
     POSITION CamPos;
     
@@ -960,18 +960,10 @@ void RenderSystem :: RefreshLightQueue(void) {
         LightPtr = *it;
         POSITION LightPos = LightPtr ->Position;
         
-        // Check light distance
-        glm::vec3 DistanceA = glm::vec3(
-            CamPos.x, 
-            CamPos.z, 
-            CamPos.y);
+        glm::vec3 PointA = glm::vec3( CamPos.x, CamPos.y, CamPos.z);
+        glm::vec3 PointB = glm::vec3( LightPos.x, LightPos.y, LightPos.z);
         
-        glm::vec3 DistanceB = glm::vec3(
-            LightPos.x, 
-            LightPos.y, 
-            LightPos.z);
-        
-        RenderDistance = glm::distance(DistanceA, DistanceB);
+        RenderDistance = glm::distance(PointA, PointB);
         
         if (RenderDistance < LightPtr ->RenderDistance) {
             
@@ -981,9 +973,8 @@ void RenderSystem :: RefreshLightQueue(void) {
                 // Add light to render queue
                 LightQueue.push_back(LightPtr);
                 
-                // Check MAX
-                i++;
-                if (i >= MAX_LIGHT_COUNT) {break;}
+                // Check MAX light count
+                if (LightQueue.size() >= MAX_LIGHT_COUNT) {break;}
                 
             }
             
@@ -1207,22 +1198,23 @@ bool RenderSystem :: SceneRender(void) {
 void RenderSystem :: RenderPipeline(void) {
     
     int DrawCallCount = 0;
+    glm::vec3 PointA = glm::vec3(0.0, 0.0, 0.0);
     
     // Set the camera projection
     glm::mat4 ProjectionMatrix = this ->SetProjectionByCamera();
     
-    // Frame skipping (for low level updating)
-    FrameCounterA++; if (FrameCounterA > 5) {FrameCounterA=0;
+    // Frame skipping (for low level updates)
+    FrameCounterA++; if (FrameCounterA > 30) {FrameCounterA=0;
         
         // Update light list
         this ->RefreshLightQueue();
         
     }
-    FrameCounterB++; if (FrameCounterB > 15) {FrameCounterB=0;
+    FrameCounterB++; if (FrameCounterB > 60) {FrameCounterB=0;
         
         
     }
-    FrameCounterC++; if (FrameCounterC > 25) {FrameCounterC=0;
+    FrameCounterC++; if (FrameCounterC > 120) {FrameCounterC=0;
         
         
         // Update sky to cameras position
@@ -1240,7 +1232,7 @@ void RenderSystem :: RenderPipeline(void) {
         
     }
     
-    // Check to clear the frame buffer
+    // Check to clear the frame
     if (DoClearFrame) {
         
         // Clear background to a specific color
@@ -1251,11 +1243,22 @@ void RenderSystem :: RenderPipeline(void) {
         
     }
     
-    // Get camera position
-    glm::vec3 DistanceA = glm::vec3(
-        CurrentCamera ->Position.x, 
-        CurrentCamera ->Position.z, 
-        CurrentCamera ->Position.y);
+    // Check camera state
+    if (CurrentCamera != nullptr) {
+        
+        // Update the current camera
+        CurrentCamera ->Update();
+        
+        // Get camera position
+        PointA = glm::vec3(CurrentCamera ->Position.x, CurrentCamera ->Position.z, CurrentCamera ->Position.y);
+        
+    } else {
+        
+        // Default camera position
+        PointA = glm::vec3(0.0, 0.0, 0.0);
+        
+    }
+    
     
     //
     // Loop through the render queue groups
@@ -1273,13 +1276,10 @@ void RenderSystem :: RenderPipeline(void) {
             Entity* CurrentEntity = *it;
             
             // Get current entity position
-            glm::vec3 DistanceB = glm::vec3(
-                CurrentEntity ->Position.x, 
-                CurrentEntity ->Position.y, 
-                CurrentEntity ->Position.z);
+            glm::vec3 PointB = glm::vec3(CurrentEntity ->Position.x, CurrentEntity ->Position.z, CurrentEntity ->Position.y);
             
             // Check entity distance from camera
-            double CurrentDistance = glm::distance( DistanceB, DistanceA);
+            double CurrentDistance = glm::distance( PointB, PointA);
             
             if (CurrentEntity ->RenderDistance > CurrentDistance) {
                 
@@ -1295,9 +1295,9 @@ void RenderSystem :: RenderPipeline(void) {
                 
                 if (CurrentEntity ->IsActive) {
                     
-                    this ->RenderDisableEntity( CurrentEntity );
-                    
                     CurrentEntity ->IsActive = false;
+                    
+                    CurrentEntity ->Deactivate();
                     
                 }
                 
@@ -1320,14 +1320,14 @@ void RenderSystem :: RenderEntity(Entity* CurrentEntity, glm::mat4 &ProjectionMa
     // Entity within range
     
     // Update the entity
-    CurrentEntity ->Update( UnitsPerSecond );
+    CurrentEntity ->Update();
     
     // Check entity state
     if (!CurrentEntity ->IsRendered) {return;}
     
-    if (CurrentEntity ->IsActive) {
+    if (!CurrentEntity ->IsActive) {
         
-        this ->RenderEnableEntity( CurrentEntity );
+        CurrentEntity ->Activate();
         
         CurrentEntity ->IsActive = true;
         
@@ -1429,32 +1429,6 @@ void RenderSystem :: RenderEntity(Entity* CurrentEntity, glm::mat4 &ProjectionMa
     //
     // Make the draw call
     this ->RenderDrawCall( DrawCallCount );
-    
-}
-
-// Enable / disable an entity
-void RenderSystem :: RenderEnableEntity(Entity* EntityPtr) {
-    
-    Light* LightListPtr;
-    for (std::vector<Light*>::iterator it = EntityPtr ->LightList.begin(); it != EntityPtr ->LightList.end(); ++it) {
-        
-        LightListPtr = *it;
-        
-        LightListPtr ->IsActive = true;
-        
-    }
-    
-}
-void RenderSystem :: RenderDisableEntity(Entity* EntityPtr) {
-    
-    Light* LightListPtr;
-    for (std::vector<Light*>::iterator it = EntityPtr ->LightList.begin(); it != EntityPtr ->LightList.end(); ++it) {
-        
-        LightListPtr = *it;
-        
-        LightListPtr ->IsActive = false;
-        
-    }
     
 }
 
@@ -1634,14 +1608,6 @@ glm::mat4 RenderSystem :: CalculateOrthographicMatrix(POSITION &Position, ROTATI
 }
 
 #endif
-
-
-
-
-
-
-
-
 
 
 

@@ -51,6 +51,8 @@ struct Camera {
     void  EnableMouseLook(bool State) {UseMouseLook = State; CursorSetPosition(MouseResetX, MouseResetY);}
     void  MouseLook(void);
     
+    void  Update(void);
+    
 };
 
 Camera :: Camera(double x=0.0, double y=0.0, double z=0.0) {
@@ -120,6 +122,22 @@ void Camera :: MouseLook(void) {
     
     MouseOldX = MouseX;
     MouseOldY = MouseY;
+    
+}
+
+void Camera :: Update(void) {
+    
+    // Update our position to the rigid body
+    if (this ->AttachedBody != nullptr) {
+        
+        // Get physical body transform
+        Physics::Transform  EntityTransform  = this ->AttachedBody ->getTransform();
+        
+        // Sync the entity to the physical body`s position
+        Physics::Vector3 EntityPosition = EntityTransform.getPosition();
+        this ->Position = glm::vec3(EntityPosition.x, EntityPosition.y, EntityPosition.z);
+        
+    }
     
 }
 

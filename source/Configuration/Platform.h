@@ -201,12 +201,12 @@ int         StringToInt(std::string String) {
 }
 
 // Return a filename from a path
-std::string GetFileName(std::string FilePath, bool AddExtension) {
+std::string GetFileName(std::string FilePath) {
     
     char seperator = '/';
     
     // Get last dot position
-    std::size_t dotPos = FilePath.rfind('.');
+    //std::size_t dotPos = FilePath.rfind('.');
     std::size_t sepPos = FilePath.rfind(seperator);
     if(sepPos != std::string::npos) {
         return FilePath.substr(sepPos + 1, FilePath.size());
@@ -319,10 +319,8 @@ void FileWriteLine(std::string Path, std::string String) {
 // Get an asset file`s header name
 std::string AssetFilePeekHeader(std::string FileName) {
     
-    int i;
     std::string Line;
     std::ifstream FileStream;
-    std::vector<std::string> Array;
     
     FileStream.open( FileName );
     
@@ -349,7 +347,6 @@ std::string AssetFilePeekHeader(std::string FileName) {
 // Get a wavefront model file`s name
 std::string ObjFilePeekHeader(std::string FileName) {
     
-    int i;
     std::string Line;
     std::ifstream FileStream;
     

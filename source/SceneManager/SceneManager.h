@@ -6,12 +6,14 @@
 
 #include "SceneManager/SceneSystem.h"
 #include "SceneManager/ResourceManager.h"
+#include "SceneManager/PhysicsManager.h"
+#include "SceneManager/Parsers.h"
 
 //
 // Scene management system
 namespace SceneManager {
     
-    // Load a scene
+    // Load a ".scene" file
     Scene* SceneLoad(std::string FilePath) {
         
         // Load and check the asset
@@ -147,7 +149,7 @@ namespace SceneManager {
                 // Get name
                 std::string Name = EntityPtr ->AttachedMesh ->Name + strings::SpaceDouble;
                 
-                // Add attachments
+                // Add light attachments
                 for (std::vector<Light*>::iterator it = EntityPtr ->LightList.begin(); it != EntityPtr ->LightList.end(); ++it) {
                     
                     Light* LightPtr = *it;

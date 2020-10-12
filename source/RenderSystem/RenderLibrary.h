@@ -19,7 +19,7 @@ namespace RenderLibrary {
     
     // Frame buffer
     unsigned int  CreateFrameBuffer(void);
-    bool          DestroyFrameBuffer(unsigned int &FrameBufferID);
+    void          DestroyFrameBuffer(unsigned int &FrameBufferID);
     
     // Buffers
     unsigned int CreateVertexArray(void);
@@ -27,20 +27,20 @@ namespace RenderLibrary {
     unsigned int CreateIndexBuffer(void);
     void SetAttributes(int Position, int Normal, int Texture);
     
-    template<typename T> bool LoadBufferVertex(unsigned int VertexBufferID, int VertexCount, T* BufferData);
-    template<typename T> bool LoadBufferIndex(unsigned int IndexBufferID, int IndexCount, T* BufferData);
+    template<typename T> void LoadBufferVertex(unsigned int VertexBufferID, int VertexCount, T* BufferData);
+    template<typename T> void LoadBufferIndex(unsigned int IndexBufferID, int IndexCount, T* BufferData);
     
-    bool DestroyBuffer(unsigned int &BufferID);
+    void DestroyBuffer(unsigned int &BufferID);
     
     // Texture buffer
     unsigned int CreateTextureBuffer(void);
-    template<typename T> bool LoadBufferTexture(unsigned int BufferID, T* TextureData, int Width, int Height);
-    bool DestroyTextureBuffer(unsigned int &BufferID);
+    template<typename T> void LoadBufferTexture(unsigned int BufferID, T* TextureData, int Width, int Height);
+    void DestroyTextureBuffer(unsigned int &BufferID);
     
     // Shader program objects
     unsigned int CompileSource(unsigned int Type, std::string Src);
     unsigned int CreateShaderProgram(std::string VertexScript, std::string FragmentScript);
-    bool DestroyShaderProgram(unsigned int &ProgramID);
+    void DestroyShaderProgram(unsigned int &ProgramID);
     
     // Draw vertex objects
     void DrawVertexBuffer(int PrimitiveType, int VertexCount);
@@ -60,15 +60,11 @@ namespace RenderLibrary {
         
         return FrameBuffer;
     }
-    bool DestroyFrameBuffer(unsigned int &FrameBufferID) {
-        
-        if (FrameBufferID == 0) {return false;}
-        if (!glIsFramebuffer(FrameBufferID)) {return false;}
+    void DestroyFrameBuffer(unsigned int &FrameBufferID) {
         
         glDeleteFramebuffers(1, &FrameBufferID);
         
         FrameBufferID = 0;
-        return true;
     }
     
     unsigned int CreateVertexArray(void) {
@@ -99,19 +95,17 @@ namespace RenderLibrary {
         return BufferIndex;
     }
     
-    template<typename T> bool LoadBufferVertex(unsigned int VertexBufferID, int VertexCount, T* BufferData) {
+    template<typename T> void LoadBufferVertex(unsigned int VertexBufferID, int VertexCount, T* BufferData) {
         
         glBindBuffer(GL_ARRAY_BUFFER, VertexBufferID);
         glBufferData(GL_ARRAY_BUFFER, VertexCount * VertexSz, &BufferData[0], GL_STATIC_DRAW);
         
-        return true;
     }
-    template<typename T> bool LoadBufferIndex(unsigned int IndexBufferID, int IndexCount, T* BufferData) {
+    template<typename T> void LoadBufferIndex(unsigned int IndexBufferID, int IndexCount, T* BufferData) {
         
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferID);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, IndexCount * IndexSz, &BufferData[0], GL_STATIC_DRAW);
         
-        return true;
     }
     
     void SetAttributes(int Position, int Normal, int Texture) {
@@ -127,13 +121,11 @@ namespace RenderLibrary {
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, VertexSz, (void*) Texture);
         
     }
-    bool DestroyBuffer(unsigned int &BufferID) {
+    void DestroyBuffer(unsigned int &BufferID) {
         
-        if (BufferID == 0) {return false;}
         glDeleteBuffers(1, &BufferID);
         
         BufferID = 0;
-        return true;
     }
     
     unsigned int CreateTextureBuffer(void) {
@@ -145,20 +137,18 @@ namespace RenderLibrary {
         
         return BufferTexture;
     }
-    template<typename T> bool LoadBufferTexture(unsigned int BufferID, T* TextureData, int Width, int Height) {
+    template<typename T> void LoadBufferTexture(unsigned int BufferID, T* TextureData, int Width, int Height) {
         
         glBindTexture(GL_TEXTURE_2D, BufferID);
         
         glTexImage2D(GL_TEXTURE_2D, 0, PIXEL_LAYOUT_INTERNAL_, Width, Height, 0, PIXEL_LAYOUT_, GL_UNSIGNED_BYTE, (void*)TextureData);
         
     }
-    bool DestroyTextureBuffer(unsigned int &BufferID) {
+    void DestroyTextureBuffer(unsigned int &BufferID) {
          
-         if (BufferID == 0) {return false;}
          glDeleteTextures(1, &BufferID);
          
          BufferID = 0;
-         return true;
     }
     
     unsigned int CompileSource(unsigned int Type, std::string Script) {
@@ -205,13 +195,11 @@ namespace RenderLibrary {
         
         return ProgramID;
     }
-    bool DestroyShaderProgram(unsigned int &ProgramID) {
+    void DestroyShaderProgram(unsigned int &ProgramID) {
         
-        if (ProgramID == 0) {return false;}
         glDeleteProgram(ProgramID);
         
         ProgramID = 0;
-        return true;
     }
     
     void DrawBufferVertex(int PrimitiveType, int VertexCount) {

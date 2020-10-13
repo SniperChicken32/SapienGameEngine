@@ -1,11 +1,10 @@
 //
-// Physics resource management
+// Physics proxy resource management
 
 namespace SceneManager {
     
     // Physics resource management
     namespace PhysicsManagement {
-        
         
         // Custom event listener class
         class EventListener : public Physics::EventListener {
@@ -59,8 +58,9 @@ namespace SceneManager {
         };
         
         
-        // Collider object
-        struct CollisionManafold {
+        
+        // Collider proxy object
+        struct CollisionProxy {
             
             std::string AssetName;
             short int   AssetIndex;
@@ -77,7 +77,7 @@ namespace SceneManager {
             float RollingResistance;
             float MassDensity;
             
-            CollisionManafold() {
+            CollisionProxy() {
                 
                 AssetName = "";
                 AssetIndex = 0;
@@ -93,87 +93,91 @@ namespace SceneManager {
                 MassDensity = 0.0;
                 
             }
-            ~CollisionManafold() {
+            ~CollisionProxy() {
                 
             }
             
         };
-        std::vector<CollisionManafold*> CollisionList;
         
-        // Find collision object
-        CollisionManafold* FindCollider(std::string AssetName) {
+        // Collider proxy list
+        std::vector<CollisionProxy*> CollisionList;
+        
+        // Create collider proxy
+        CollisionProxy* CreateBoxProxy(std::string AssetName, short int AssetIndex, float x, float y, float z) {
             
-            CollisionManafold* CollisionPtr;
-            for (std::vector<CollisionManafold*>::iterator it = CollisionList.begin(); it != CollisionList.end(); ++it) {
+            Physics::Vector3 BoxScale   = Physics::Vector3(x, y, z);
+            Physics::BoxShape* Collider = PhysicsCommon ->createBoxShape(BoxScale);
+            
+            CollisionProxy* CollisionProxyPtr = new CollisionProxy();
+            
+            CollisionProxyPtr ->AssetName = AssetName;
+            CollisionProxyPtr ->AssetIndex = AssetIndex;
+            CollisionProxyPtr ->AssetType = 0;
+            
+            CollisionProxyPtr ->CollisionBox = Collider;
+            
+            CollisionList.push_back(CollisionProxyPtr);
+            
+            return CollisionProxyPtr;
+        }
+        CollisionProxy* CreateSphereProxy(std::string AssetName, short int AssetIndex, float Radius) {
+            
+            Physics::SphereShape* Collider = PhysicsCommon ->createSphereShape(Radius);
+            
+            CollisionProxy* CollisionProxyPtr = new CollisionProxy();
+            
+            CollisionProxyPtr ->AssetName = AssetName;
+            CollisionProxyPtr ->AssetIndex = AssetIndex;
+            CollisionProxyPtr ->AssetType = 1;
+            
+            CollisionProxyPtr ->CollisionSphere = Collider;
+            
+            CollisionList.push_back(CollisionProxyPtr);
+            
+            return CollisionProxyPtr;
+        }
+        CollisionProxy* CreateCapsuleProxy(std::string AssetName, short int AssetIndex, float Radius, float Length) {
+            
+            Physics::CapsuleShape* Collider = PhysicsCommon ->createCapsuleShape(Radius, Length);
+            
+            CollisionProxy* CollisionProxyPtr = new CollisionProxy();
+            
+            CollisionProxyPtr ->AssetName = AssetName;
+            CollisionProxyPtr ->AssetIndex = AssetIndex;
+            CollisionProxyPtr ->AssetType = 2;
+            
+            CollisionProxyPtr ->CollisionCapsule = Collider;
+            
+            CollisionList.push_back(CollisionProxyPtr);
+            
+            return CollisionProxyPtr;
+        }
+        
+        // Find collider proxy
+        CollisionProxy* FindProxy(std::string AssetName) {
+            
+            CollisionProxy* CollisionPtr;
+            for (std::vector<CollisionProxy*>::iterator it = CollisionList.begin(); it != CollisionList.end(); ++it) {
                 CollisionPtr = *it;
                 if (CollisionPtr ->AssetName == AssetName) {return CollisionPtr;}
             }
             return nullptr;
         }
         
-        // Destroy ALL colliders in the list
-        void DestroyColliders(void) {
+        // Destroy ALL collider proxies
+        void DestroyAllProxies(void) {
             
-            CollisionManafold* CollisionPtr;
-            for (std::vector<CollisionManafold*>::iterator it = CollisionList.begin(); it != CollisionList.end(); ++it) {
+            CollisionProxy* CollisionPtr;
+            for (std::vector<CollisionProxy*>::iterator it = CollisionList.begin(); it != CollisionList.end(); ++it) {
                 CollisionPtr = *it;
                 delete CollisionPtr;
             }
             CollisionList.clear();
         }
         
-        // Create collider objects
-        CollisionManafold* AddBoxCollider(std::string AssetName, short int AssetIndex, float x, float y, float z) {
-            
-            Physics::Vector3 BoxScale   = Physics::Vector3(x, y, z);
-            Physics::BoxShape* Collider = PhysicsCommon ->createBoxShape(BoxScale);
-            
-            CollisionManafold* CollisionMfold = new CollisionManafold();
-            
-            CollisionMfold ->AssetName = AssetName;
-            CollisionMfold ->AssetIndex = AssetIndex;
-            CollisionMfold ->AssetType = 0;
-            
-            CollisionMfold ->CollisionBox = Collider;
-            
-            CollisionList.push_back(CollisionMfold);
-            
-            return CollisionMfold;
-        }
-        CollisionManafold* AddSphereCollider(std::string AssetName, short int AssetIndex, float Radius) {
-            
-            Physics::SphereShape* Collider = PhysicsCommon ->createSphereShape(Radius);
-            
-            CollisionManafold* CollisionMfold = new CollisionManafold();
-            
-            CollisionMfold ->AssetName = AssetName;
-            CollisionMfold ->AssetIndex = AssetIndex;
-            CollisionMfold ->AssetType = 1;
-            
-            CollisionMfold ->CollisionSphere = Collider;
-            
-            CollisionList.push_back(CollisionMfold);
-            
-            return CollisionMfold;
-        }
-        CollisionManafold* AddCapsuleCollider(std::string AssetName, short int AssetIndex, float Radius, float Length) {
-            
-            Physics::CapsuleShape* Collider = PhysicsCommon ->createCapsuleShape(Radius, Length);
-            
-            CollisionManafold* CollisionMfold = new CollisionManafold();
-            
-            CollisionMfold ->AssetName = AssetName;
-            CollisionMfold ->AssetIndex = AssetIndex;
-            CollisionMfold ->AssetType = 2;
-            
-            CollisionMfold ->CollisionCapsule = Collider;
-            
-            CollisionList.push_back(CollisionMfold);
-            
-            return CollisionMfold;
-        }
         
-        // Create a rigid body
+        
+        // Create a rigid body at the specified position
         Physics::RigidBody* CreateRigidBody(double x=0.0, double y=0.0, double z=0.0) {
             
             Physics::Vector3    Position   = Physics::Vector3(x, y, z);

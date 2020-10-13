@@ -16,15 +16,15 @@ const std::string EVENT_LOG_FILENAME = "event_log.txt";
 
 //
 // Console window output
-#define  SHOW_CONSOLE_
+//#define  SHOW_CONSOLE_
 //#define  CONSOLE_RENDER_TIMING_
 //#define  CONSOLE_CHECK_ALLOCATIONS_
-#define  CONSOLE_CHECK_COLLISIONS_
+//#define  CONSOLE_CHECK_COLLISIONS_
 
 
 //
 // Physics world settings
-#define  GRAVITY_VECTOR  0.0, 0.0, (-9.81 * 2.0 * 2.0)
+#define  GRAVITY_VECTOR  0.0, 0.0, -39.24
 
 #define  ITERATER_POSITION_SOLVER  15
 #define  ITERATER_VELOCITY_SOLVER  10
@@ -56,11 +56,9 @@ const std::string EVENT_LOG_FILENAME = "event_log.txt";
 #include <iostream>
 #endif
 
-
 // Engine plug-ins
 #include "Configuration/Plugins.h"
 
 // Platform specific functions
 #include "Configuration/Platform.h"
-
 

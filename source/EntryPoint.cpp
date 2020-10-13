@@ -2,11 +2,10 @@
 // Application layer
 
 #include "EntryPoint.h"
+#include "Procedure.h"
 
 // Sandbox layer
 #include "Sandbox.h"
-
-LRESULT CALLBACK Procedure(HWND, UINT, WPARAM, LPARAM);
 
 //
 // Windows application entry point
@@ -63,6 +62,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     cHnd = GetConsoleWindow();
     
 #ifdef  SHOW_CONSOLE_
+    
     ShowWindow(cHnd, SW_SHOW);
     
 	SetWindowPos(cHnd, 0, 0, 0, 640, 480, SWP_NOSIZE | SWP_NOZORDER);
@@ -105,7 +105,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     Physics::Vector3 GravityVec = Physics::Vector3(GRAVITY_VECTOR);
     PhysicsWorld ->setGravity(GravityVec);
     // Debug rendering
-    PhysicsWorld ->setIsDebugRenderingEnabled(true);
+    PhysicsWorld ->setIsDebugRenderingEnabled(false);
     
     // Create and register our custom event listener
     SceneManager::PhysicsManagement::EventListener listener;
@@ -251,54 +251,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ShutdownRenderSystem();
     
     // Destroy physics colliders
-    SceneManager::PhysicsManagement::DestroyColliders();
+    SceneManager::PhysicsManagement::DestroyAllProxies();
     
     // Shutdown physics system
     PhysicsCommon ->destroyPhysicsWorld(PhysicsWorld);
     delete PhysicsCommon;
     
     return messages.wParam;
-}
-
-LRESULT CALLBACK Procedure(HWND wHnd, UINT messages, WPARAM wParam, LPARAM lParam) {
-    
-    switch (messages) {
-        
-        // Capture keys
-        case WM_KEYDOWN: if (InputSystem::Input != nullptr) InputSystem::Input ->SetKeyPressed(wParam); break;
-        case WM_KEYUP:   if (InputSystem::Input != nullptr) InputSystem::Input ->SetKeyReleased(wParam); break;
-        
-        // Check focus
-        case WM_KILLFOCUS: if (InputSystem::Input != nullptr) InputSystem::Input ->ClearKeys(); break;
-        
-        // Resize the view port
-        case WM_SIZE: 
-            RECT WindowRect; GetWindowRect(wHnd, &WindowRect);
-            if (Renderer != nullptr) Renderer -> SetViewport(0, 0, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top);
-            break;
-        
-        // Set window MIN size
-        case WM_GETMINMAXINFO: {
-            
-            LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
-            lpMMI -> ptMinTrackSize.x = 480;
-            lpMMI -> ptMinTrackSize.y = 320;
-            break;
-            }
-        
-        // Window creation and destruction
-        case WM_CREATE: 
-            break;
-        
-        case WM_CLOSE: 
-            PostQuitMessage(0);
-            break;
-        
-        default: 
-            return DefWindowProc (wHnd, messages, wParam, lParam);
-        
-    }
-    
-    return 0;
 }
 

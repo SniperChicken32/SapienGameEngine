@@ -28,7 +28,7 @@ namespace SceneManager {
                 if (Strings[0] == "define_collider") {
                     
                     // Check if the asset is already loaded
-                    if (PhysicsManagement::FindCollider( Strings[1] ) != nullptr) return;
+                    if (PhysicsManagement::FindProxy( Strings[1] ) != nullptr) return;
                     
                     std::string AssetName  = Strings[1];
                     short int   AssetIndex = StringToInt(Strings[2]);
@@ -40,7 +40,7 @@ namespace SceneManager {
                         float yy = StringToFloat(Strings[5]);
                         float zz = StringToFloat(Strings[6]);
                         
-                        PhysicsManagement::AddBoxCollider(AssetName, AssetIndex, xx, yy, zz);
+                        PhysicsManagement::CreateBoxProxy(AssetName, AssetIndex, xx, yy, zz);
                         
 #ifdef  DEVELOPMENT_MODE_
                         LogWrite(strings::LogStringAdd + strings::AssetTypeCollider + Strings[1]);
@@ -53,7 +53,7 @@ namespace SceneManager {
                         
                         float Radius = StringToFloat(Strings[4]);
                         
-                        PhysicsManagement::AddSphereCollider(AssetName, AssetIndex, Radius);
+                        PhysicsManagement::CreateSphereProxy(AssetName, AssetIndex, Radius);
                         
 #ifdef  DEVELOPMENT_MODE_
                         LogWrite(strings::LogStringAdd + strings::AssetTypeCollider + Strings[1]);
@@ -67,7 +67,7 @@ namespace SceneManager {
                         float Radius = StringToFloat(Strings[4]);
                         float Height = StringToFloat(Strings[5]);
                         
-                        PhysicsManagement::AddCapsuleCollider(AssetName, AssetIndex, Radius, Height);
+                        PhysicsManagement::CreateCapsuleProxy(AssetName, AssetIndex, Radius, Height);
                         
 #ifdef  DEVELOPMENT_MODE_
                         LogWrite(strings::LogStringAdd + strings::AssetTypeCollider + Strings[1]);
@@ -413,8 +413,8 @@ namespace SceneManager {
                     RigidBody ->setIsAllowedToSleep(true);
                     
                     // Find the collision object
-                    PhysicsManagement::CollisionManafold* CollisionMfold = PhysicsManagement::FindCollider( Collider );
-                    if (CollisionMfold == nullptr) return;
+                    PhysicsManagement::CollisionProxy* CollisionProxyPtr = PhysicsManagement::FindProxy( Collider );
+                    if (CollisionProxyPtr == nullptr) return;
                     
                     // Create the collision object
                     Physics::Transform  Trans = Physics::Transform(Physics::Vector3(0.0, 0.0, 0.0), Physics::Quaternion::identity());
@@ -425,11 +425,11 @@ namespace SceneManager {
                     Physics::Collider* ColliderPtr = nullptr;
                     
                     // Type 0 - box
-                    if (CollisionMfold ->AssetType == 0) {ColliderPtr = RigidBody ->addCollider( CollisionMfold ->CollisionBox, Trans );}
+                    if (CollisionProxyPtr ->AssetType == 0) {ColliderPtr = RigidBody ->addCollider( CollisionProxyPtr ->CollisionBox, Trans );}
                     // Type 1 - sphere
-                    if (CollisionMfold ->AssetType == 1) {ColliderPtr = RigidBody ->addCollider( CollisionMfold ->CollisionSphere, Trans );}
+                    if (CollisionProxyPtr ->AssetType == 1) {ColliderPtr = RigidBody ->addCollider( CollisionProxyPtr ->CollisionSphere, Trans );}
                     // Type 2 - capsule
-                    if (CollisionMfold ->AssetType == 2) {ColliderPtr = RigidBody ->addCollider( CollisionMfold ->CollisionCapsule, Trans );}
+                    if (CollisionProxyPtr ->AssetType == 2) {ColliderPtr = RigidBody ->addCollider( CollisionProxyPtr ->CollisionCapsule, Trans );}
                     
                     // Check body type dynamic/static
                     if (Mass <= 0.0) {
@@ -617,8 +617,8 @@ namespace SceneManager {
                     RigidBody ->setIsAllowedToSleep(true);
                     
                     // Find the collision object
-                    PhysicsManagement::CollisionManafold* CollisionMfold = PhysicsManagement::FindCollider( Collider );
-                    if (CollisionMfold == nullptr) return;
+                    PhysicsManagement::CollisionProxy* CollisionProxyPtr = PhysicsManagement::FindProxy( Collider );
+                    if (CollisionProxyPtr == nullptr) return;
                     
                     // Create the collision object
                     Physics::Transform  Transform = Physics::Transform(Physics::Vector3(0.0, 0.0, 0.0), Physics::Quaternion::identity());
@@ -637,11 +637,11 @@ namespace SceneManager {
                     Physics::Collider* ColliderPtr;
                     
                     // Type 0 - box
-                    if (CollisionMfold ->AssetType == 0) {ColliderPtr = RigidBody ->addCollider( CollisionMfold ->CollisionBox, Transform );}
+                    if (CollisionProxyPtr ->AssetType == 0) {ColliderPtr = RigidBody ->addCollider( CollisionProxyPtr ->CollisionBox, Transform );}
                     // Type 1 - sphere
-                    if (CollisionMfold ->AssetType == 1) {ColliderPtr = RigidBody ->addCollider( CollisionMfold ->CollisionSphere, Transform );}
+                    if (CollisionProxyPtr ->AssetType == 1) {ColliderPtr = RigidBody ->addCollider( CollisionProxyPtr ->CollisionSphere, Transform );}
                     // Type 2 - capsule
-                    if (CollisionMfold ->AssetType == 2) {ColliderPtr = RigidBody ->addCollider( CollisionMfold ->CollisionCapsule, Transform );}
+                    if (CollisionProxyPtr ->AssetType == 2) {ColliderPtr = RigidBody ->addCollider( CollisionProxyPtr ->CollisionCapsule, Transform );}
                     
                     RigidBody ->updateLocalInertiaTensorFromColliders();
                     //RigidBody ->updateMassPropertiesFromColliders();

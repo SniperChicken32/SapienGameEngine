@@ -37,10 +37,9 @@ namespace SceneManager {
             
         }
         
-#ifdef  DEVELOPMENT_MODE_
-        LogWrite("================");
-        LogWrite(strings::LogStringAdd + strings::AssetTypeScene + AssetLoader.AssetName);
-#endif  
+        
+        LogWrite(strings::AddSymbol + strings::SpaceSingle + strings::AssetTypeScene + AssetLoader.AssetName);
+        
         //
         // Process scene definitions
         for (std::map<std::string, std::vector<std::string>>::iterator it = AssetLoader.AssetData.begin(); it != AssetLoader.AssetData.end(); it++) {

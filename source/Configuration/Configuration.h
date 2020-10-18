@@ -26,8 +26,8 @@ const std::string EVENT_LOG_FILENAME = "event_log.txt";
 // Physics world settings
 #define  GRAVITY_VECTOR  0.0, 0.0, -39.24
 
-#define  ITERATER_POSITION_SOLVER  15
-#define  ITERATER_VELOCITY_SOLVER  10
+#define  ITERATER_POSITION_SOLVER  5
+#define  ITERATER_VELOCITY_SOLVER  8
 
 
 //

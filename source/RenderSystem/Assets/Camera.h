@@ -33,24 +33,39 @@ struct Camera {
     Camera(double, double, double);
     ~Camera();
     
+    /** Attaches a rigid body to the camera.*/
     bool  AttachBody(Physics::RigidBody* BodyPtr) {if (BodyPtr == nullptr) {return false;}AttachedBody = BodyPtr; return true;}
+    /** Detaches any attached rigid body.*/
     void  DetachBody(void)          {AttachedBody = nullptr;}
     
+    /** Returns the height offset of the camera.*/
     float GetHeight(void)             {return CameraHeight;}
+    /** Sets the height offset for the camera.*/
     void  SetHeight(float CamHeight)  {CameraHeight = CamHeight;}
     
-    // Perspective
+    /** Sets the perspective projection.*/
     void  SetPerspective(double fov, double aspct, double nr, double fr) {vpFoV=fov; vpAspect=aspct; vpNear=nr; vpFar=fr;}
+    /** Sets the field of view.*/
     void  SetFov(double fov) {vpFoV=fov;}
+    /** Sets the aspect.*/
     void  SetAspect(double aspct) {vpAspect=aspct;}
+    /** Sets the minimum camera depth.*/
     void  SetNear(double nr) {vpNear=nr;}
+    /** Sets the maximum camera depth.*/
     void  SetFar(double fr) {vpFar=fr;}
     
-    // Mouse
+    /** Sets the sensitivity multiplier for mouse movement.*/
     void  SetMouseSensitivity(float yaw, float pitch) {MouseSensitivityYaw = (yaw * 0.00005); MouseSensitivityPitch = (pitch * 0.00005);}
+    /** Enables the use of mouse look.*/
     void  EnableMouseLook(bool State) {UseMouseLook = State; CursorSetPosition(MouseResetX, MouseResetY);}
+    
+    //
+    // (Internal functions)
+    
+    /** Updates the mouse look.*/
     void  MouseLook(void);
     
+    /** Update the camera object.*/
     void  Update(void);
     
 };

@@ -1,7 +1,35 @@
 //
-// Scene file parsing
+// Scene file string parsers and loaders
 
 namespace SceneManager {
+    
+    // Get an asset file`s header name
+    std::string AssetFilePeekHeader(std::string FileName) {
+        
+        std::string Line;
+        std::ifstream FileStream;
+        
+        FileStream.open( FileName );
+        
+        // Check file opened
+        if (FileStream.is_open()) {
+            
+            getline(FileStream, Line);
+            
+            // Explode the string
+            int i=0; std::string Strings[25];
+            std::vector<std::string> Array = StringExplode(Line, ' ');
+            for (std::vector<std::string>::iterator it = Array.begin(); it != Array.end(); ++it) {std::string String = *it; Strings[i] = String; i++;}
+            
+            FileStream.close();
+            
+            // Return asset header name
+            return Strings[1];
+            
+        }
+        
+        return "";
+    }
     
     namespace AssetParsers {
         
@@ -28,7 +56,7 @@ namespace SceneManager {
                 if (Strings[0] == "define_collider") {
                     
                     // Check if the asset is already loaded
-                    if (PhysicsManagement::FindProxy( Strings[1] ) != nullptr) return;
+                    if (SceneManager::PhysicsManagement::ColliderMgr ->FindProxy( Strings[1] ) != nullptr) return;
                     
                     std::string AssetName  = Strings[1];
                     short int   AssetIndex = StringToInt(Strings[2]);
@@ -40,7 +68,7 @@ namespace SceneManager {
                         float yy = StringToFloat(Strings[5]);
                         float zz = StringToFloat(Strings[6]);
                         
-                        PhysicsManagement::CreateBoxProxy(AssetName, AssetIndex, xx, yy, zz);
+                        SceneManager::PhysicsManagement::ColliderMgr ->CreateBoxProxy(AssetName, AssetIndex, xx, yy, zz);
                         
 #ifdef  DEVELOPMENT_MODE_
                         LogWrite(strings::LogStringAdd + strings::AssetTypeCollider + Strings[1]);
@@ -53,7 +81,7 @@ namespace SceneManager {
                         
                         float Radius = StringToFloat(Strings[4]);
                         
-                        PhysicsManagement::CreateSphereProxy(AssetName, AssetIndex, Radius);
+                        SceneManager::PhysicsManagement::ColliderMgr ->CreateSphereProxy(AssetName, AssetIndex, Radius);
                         
 #ifdef  DEVELOPMENT_MODE_
                         LogWrite(strings::LogStringAdd + strings::AssetTypeCollider + Strings[1]);
@@ -67,7 +95,7 @@ namespace SceneManager {
                         float Radius = StringToFloat(Strings[4]);
                         float Height = StringToFloat(Strings[5]);
                         
-                        PhysicsManagement::CreateCapsuleProxy(AssetName, AssetIndex, Radius, Height);
+                        SceneManager::PhysicsManagement::ColliderMgr ->CreateCapsuleProxy(AssetName, AssetIndex, Radius, Height);
                         
 #ifdef  DEVELOPMENT_MODE_
                         LogWrite(strings::LogStringAdd + strings::AssetTypeCollider + Strings[1]);
@@ -413,7 +441,7 @@ namespace SceneManager {
                     RigidBody ->setIsAllowedToSleep(true);
                     
                     // Find the collision object
-                    PhysicsManagement::CollisionProxy* CollisionProxyPtr = PhysicsManagement::FindProxy( Collider );
+                    PhysicsManagement::CollisionProxy* CollisionProxyPtr = SceneManager::PhysicsManagement::ColliderMgr ->FindProxy( Collider );
                     if (CollisionProxyPtr == nullptr) return;
                     
                     // Create the collision object
@@ -602,6 +630,20 @@ namespace SceneManager {
                     NewActorPtr ->LegREntity ->AttachMesh(LegRMesh);
                     NewActorPtr ->LegLEntity ->AttachMesh(LegLMesh);
                     
+                    
+                    //
+                    // Set initial health
+                    
+                    float InitialHealth = 100.0f;
+                    
+                    NewActorPtr ->HeadEntity  ->AddComponent("health", InitialHealth);
+                    NewActorPtr ->TorsoEntity ->AddComponent("health", InitialHealth);
+                    NewActorPtr ->ArmREntity  ->AddComponent("health", InitialHealth);
+                    NewActorPtr ->ArmLEntity  ->AddComponent("health", InitialHealth);
+                    NewActorPtr ->LegREntity  ->AddComponent("health", InitialHealth);
+                    NewActorPtr ->LegLEntity  ->AddComponent("health", InitialHealth);
+                    
+                    
                     // Get entity physics
                     std::string Collider = Strings[7];
                     
@@ -617,7 +659,7 @@ namespace SceneManager {
                     RigidBody ->setIsAllowedToSleep(true);
                     
                     // Find the collision object
-                    PhysicsManagement::CollisionProxy* CollisionProxyPtr = PhysicsManagement::FindProxy( Collider );
+                    PhysicsManagement::CollisionProxy* CollisionProxyPtr = SceneManager::PhysicsManagement::ColliderMgr ->FindProxy( Collider );
                     if (CollisionProxyPtr == nullptr) return;
                     
                     // Create the collision object
@@ -658,6 +700,107 @@ namespace SceneManager {
                     return;
                 }
                 
+                
+                //
+                // Terrain generation
+                if (Strings[0] == "generate"){
+                    
+                    // "collPlatform"
+                    std::string ColliderPlatform = "collPlatform";
+                    
+                    // Find the mesh by name
+                    //MeshPtr = Renderer ->FindMesh( Strings[1] );
+                    MeshPtr = Renderer ->FindMesh( "Platform" );
+                    if (MeshPtr == nullptr) {Msg("Mesh not found"); return;}
+                    
+                    POSITION Position = POSITION(0.0, 0.0, 0.0);
+                    ROTATION Rotation = ROTATION(0.0, 0.0, 0.0);
+                    SCALE    Scale = SCALE(5.0, 5.0, 5.0);
+                    
+                    
+                    // Find the collision asset
+                    SceneManager::PhysicsManagement::CollisionProxy* CollisionProxyPtr = SceneManager::PhysicsManagement::ColliderMgr ->FindProxy( ColliderPlatform );
+                    if (CollisionProxyPtr == nullptr) {Msg("Collision proxy not found"); return;}
+                    
+                    
+                    
+                    int Width  = 25;
+                    int Height = 25;
+                    int Mul    = 50;
+                    
+                    for (int i=0; i < Width; i++) {
+                        
+                        double AreaWidth = StringToDouble(IntToString(i * Mul));
+                        
+                        for (int u=0; u < Height; u++) {
+                            
+                            double AreaHeight = StringToDouble(IntToString(u * Mul));
+                            
+                            //
+                            // Construct an entity
+                            Entity* EntityPtr = Renderer ->CreateEntity(Position.x + AreaWidth, Position.y + AreaHeight, Position.z);
+                            
+                            EntityPtr ->Rotation = Rotation;
+                            EntityPtr ->Scale    = Scale;
+                            
+                            EntityPtr ->SetRenderDistance(200.0);
+                            
+                            // Attach the mesh asset
+                            EntityPtr ->AttachMesh( MeshPtr );
+                            EntityPtr ->ColliderName = ColliderPlatform;
+                            
+                            // Remember the original file path
+                            EntityPtr ->FilePath = FilePath;
+                            
+                            // Add the entity to the scene graph
+                            ScenePointer ->AddEntity( EntityPtr );
+                            
+                            
+                            
+                            
+                            
+                            //
+                            // Construct a rigid body
+                            Physics::RigidBody* RigidBody = PhysicsManagement::CreateRigidBody(Position.x + AreaWidth, Position.y + AreaHeight, Position.z);
+                            EntityPtr ->AttachedBody = RigidBody;
+                            
+                            //
+                            // Create the collision object
+                            Physics::Transform CollisionOffset = Physics::Transform(Physics::Vector3(0.0, 0.0, 0.0), Physics::Quaternion::identity());
+                            
+                            //
+                            // Check collider type
+                            Physics::Collider* ColliderPtr = nullptr;
+                            
+                            // Type 0 - box
+                            if (CollisionProxyPtr ->AssetType == 0) {ColliderPtr = RigidBody ->addCollider( CollisionProxyPtr ->CollisionBox, CollisionOffset );}
+                            // Type 1 - sphere
+                            if (CollisionProxyPtr ->AssetType == 1) {ColliderPtr = RigidBody ->addCollider( CollisionProxyPtr ->CollisionSphere, CollisionOffset );}
+                            // Type 2 - capsule
+                            if (CollisionProxyPtr ->AssetType == 2) {ColliderPtr = RigidBody ->addCollider( CollisionProxyPtr ->CollisionCapsule, CollisionOffset );}
+                            
+                            // Static mass
+                            RigidBody ->setType( Physics::BodyType::STATIC );
+                            RigidBody ->setMass( 0.0 );
+                            RigidBody ->setLinearDamping ( 0.0 );
+                            RigidBody ->setAngularDamping( 0.0 );
+                            
+                            
+                        }
+                        
+                    }
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    return;
+                }
+                
+                
 #ifdef  LOG_DETAILS_
                 LogString = strings::LogStringError + Strings[0] + strings::SpaceDouble;
                 LogWrite(LogString);
@@ -682,7 +825,6 @@ namespace SceneManager {
 #endif
                 std::string Line;
                 
-                // Loop through the file
                 while (getline(FileStream, Line)) {
                     
                     if (Line == "") continue;
@@ -692,7 +834,6 @@ namespace SceneManager {
                     
                 }
                 
-                // Close the file
                 FileStream.close();
                 
             } else {LogWrite(strings::LogStringFail + PathName); return false;}
@@ -703,7 +844,7 @@ namespace SceneManager {
         // Load object locations into a scene
         bool LoadLocations(Scene* ScenePointer, std::string PathName) {
             
-            // Save file path
+            // Save scene file path
             ScenePointer ->Path = PathName;
             
             std::ifstream FileLocs;
@@ -715,8 +856,6 @@ namespace SceneManager {
                 LogWrite("");
                 LogWrite(strings::LogStringLoad + "Locations: " + PathName);
 #endif
-                
-                // Loop through the file
                 
                 std::string Line;
                 

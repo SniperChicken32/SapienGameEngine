@@ -29,9 +29,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+//
 // Wavefront file loader
 #include <Bly7/OBJ_Loader.h>
 
+//
 // Physics by ReactPhysics3D
 #include <ReactPhysics3D/reactphysics3d.h>
 namespace Physics = reactphysics3d;

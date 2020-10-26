@@ -3,32 +3,46 @@
 
 namespace SceneManager {
     
+    // Prototypes
+    namespace AssetParsers {
+        
+        bool LoadDefinitions(std::string PathName);
+        bool LoadLocations(Scene* ScenePointer, std::string PathName);
+        
+    }
+    
     // Resource management
     namespace ResourceManagement {
         
-        // Asset file loader
-        struct AssetLoader {
+        /** Asset file loader class.*/
+        class AssetLoader {
             
-            // In the file being loaded, the asset name is
-            // specified in this way:
-            //
-            // define_asset YourAssetName
+            /** 
+            The asset files header should be defined
+            in the following way:
             
-            // Values are specified in the following way:
-            //
-            // Name Value
+            define_asset YourAssetName
             
-            // Data blocks are specified
-            // by using the following syntax:
-            //
-            // [begin] YourBlockName
-            //
-            // Data...
-            //
-            // [end]
+            Data/value pairs can be specified in the following way:
+            
+            Name Value
+            
+            Data blocks are specified
+            by using the following syntax:
+            
+            [begin] YourBlockName
+            
+            Data...
+            
+            [end]*/
             
             // The name of the asset
             std::string AssetName;
+            
+            // State of the asset data
+            bool IsAssetLoaded;
+            
+            public:
             
             // Pair of names and values
             std::map<std::string, std::vector<std::string>> AssetData;
@@ -36,22 +50,20 @@ namespace SceneManager {
             // Pair of names and data blocks
             std::map<std::string, std::string> DataBlocks;
             
-            bool IsDataLoaded;
-            
-            std::fstream FileStream;
-            
             AssetLoader(std::string FileName) {
                 
-                AssetName = "";
+                std::fstream FileStream;
                 
-                AssetData.clear();
-                DataBlocks.clear();
+                this ->AssetName = "";
                 
-                IsDataLoaded = false;
+                this ->AssetData.clear();
+                this ->DataBlocks.clear();
+                
+                this ->IsAssetLoaded = false;
                 
                 // Load the file data
                 FileStream.open( FileName );
-                if (this ->IsAssetLoaded()) {
+                if (FileStream.is_open()) {
                     
                     std::string String;
                     
@@ -68,7 +80,7 @@ namespace SceneManager {
                     if (Array[0] != "define_asset") return;
                     
                     // Set asset name
-                    AssetName = Array[1];
+                    this ->AssetName = Array[1];
                     
                     // Load the data from file
                     while ( getline(FileStream, String) ) {
@@ -97,7 +109,7 @@ namespace SceneManager {
                                 
                             }
                             
-                            DataBlocks.emplace(BlockName, BlockString);
+                            this ->DataBlocks.emplace(BlockName, BlockString);
                             
                         }
                         
@@ -113,7 +125,7 @@ namespace SceneManager {
                         
                     }
                     
-                    IsDataLoaded = true;
+                    IsAssetLoaded = true;
                     
                     FileStream.close();
                     
@@ -124,8 +136,9 @@ namespace SceneManager {
                 
             }
             
-            // Check if the asset is loaded
-            bool IsAssetLoaded(void) {if (IsDataLoaded) return true; if (FileStream.is_open()) return true; else return false;}
+            bool GetAssetState() {return this ->IsAssetLoaded;}
+            
+            std::string GetAssetName(void) {return AssetName;}
             
             std::string GetValueByName(std::string Name, int Index) {
                 
@@ -163,13 +176,14 @@ namespace SceneManager {
             
         };
         
+        // Object loaders
         namespace Loaders {
             
             Camera* LoadCamera(std::string FilePath) {
                 
                 // Load and check the asset
                 SceneManager::ResourceManagement::AssetLoader AssetLoader( FilePath );
-                if (!AssetLoader.IsAssetLoaded()) {
+                if (!AssetLoader.GetAssetState()) {
                     
                     LogWrite(strings::LogStringError + strings::AssetTypeCamera + FilePath);
                     
@@ -177,16 +191,16 @@ namespace SceneManager {
                 }
                 
                 // Check if the asset is already loaded
-                if (Renderer ->FindCamera(AssetLoader.AssetName) != nullptr) return nullptr;
+                if (Renderer ->FindCamera(AssetLoader.GetAssetName()) != nullptr) return nullptr;
                 
                 // Create the asset
                 Camera* CameraPtr = Renderer ->CreateCamera();
                 
                 // Name the asset
-                CameraPtr ->Name = AssetLoader.AssetName;
+                CameraPtr ->Name = AssetLoader.GetAssetName();
                 
 #ifdef  DEVELOPMENT_MODE_
-                LogWrite(strings::LogStringAdd + strings::AssetTypeCamera + AssetLoader.AssetName);
+                LogWrite(strings::LogStringAdd + strings::AssetTypeCamera + AssetLoader.GetAssetName());
 #endif  
                 
                 // Assign asset values
@@ -210,11 +224,6 @@ namespace SceneManager {
                 
                 return CameraPtr;
                 
-                
-                
-                // Get asset name
-                std::string AssetName = AssetFilePeekHeader(FilePath);
-                
                 std::string Line;
                 std::ifstream FileStream;
                 
@@ -222,9 +231,6 @@ namespace SceneManager {
                 
                 // Check file open
                 if (FileStream.is_open()){
-                    
-                    
-                    
                     
                     // Loop through the file
                     while ( getline(FileStream, Line) ) {
@@ -275,7 +281,7 @@ namespace SceneManager {
                 
                 // Load and check the asset
                 SceneManager::ResourceManagement::AssetLoader AssetLoader( FilePath );
-                if (!AssetLoader.IsAssetLoaded()) {
+                if (!AssetLoader.GetAssetState()) {
                     
                     LogWrite(strings::LogStringError + strings::AssetTypeLight + FilePath);
                     
@@ -283,17 +289,17 @@ namespace SceneManager {
                 }
                 
                 // Check if the asset is already loaded
-                if (Renderer ->FindLight(AssetLoader.AssetName) != nullptr) return nullptr;
+                if (Renderer ->FindLight(AssetLoader.GetAssetName()) != nullptr) return nullptr;
                 
                 // Create the asset
                 Light* LightPtr = Renderer ->CreateLight();
                 
                 // Name the asset
-                LightPtr ->Name = AssetLoader.AssetName;
+                LightPtr ->Name = AssetLoader.GetAssetName();
                 LightPtr ->OriginalName = "";
                 
 #ifdef  DEVELOPMENT_MODE_
-                LogWrite(strings::LogStringAdd + strings::AssetTypeLight + AssetLoader.AssetName);
+                LogWrite(strings::LogStringAdd + strings::AssetTypeLight + AssetLoader.GetAssetName());
 #endif  
                 
                 // Assign asset values
@@ -411,7 +417,7 @@ namespace SceneManager {
                 
                 // Load and check the asset
                 SceneManager::ResourceManagement::AssetLoader AssetLoader( FilePath );
-                if (!AssetLoader.IsAssetLoaded()) {
+                if (!AssetLoader.GetAssetState()) {
                     
                     LogWrite(strings::LogStringError + strings::AssetTypeMaterial + FilePath);
                     
@@ -419,17 +425,14 @@ namespace SceneManager {
                 }
                 
                 // Check if the asset is already loaded
-                if (Renderer ->FindMaterial(AssetLoader.AssetName) != nullptr) return nullptr;
+                if (Renderer ->FindMaterial(AssetLoader.GetAssetName()) != nullptr) return nullptr;
                 
                 // Create the asset
                 Material* MaterialPtr = Renderer ->CreateMaterial();
                 
                 // Name the asset
-                MaterialPtr ->Name = AssetLoader.AssetName;
+                MaterialPtr ->Name = AssetLoader.GetAssetName();
                 
-#ifdef  DEVELOPMENT_MODE_
-                LogWrite(strings::LogStringAdd + strings::AssetTypeMaterial + AssetLoader.AssetName);
-#endif  
                 
                 // Assign asset values
                 
@@ -457,12 +460,12 @@ namespace SceneManager {
                 //MaterialPtr ->
                 
                 
-                for (std::map<std::string, std::vector<std::string>>::iterator it = AssetLoader.AssetData.begin(); it != AssetLoader.AssetData.end(); it++) {
+                //for (std::map<std::string, std::vector<std::string>>::iterator it = AssetLoader.AssetData.begin(); it != AssetLoader.AssetData.end(); it++) {
                     
                     //it ->first;
                     //it ->second;
                     
-                }
+                //}
                 
                 AssetLoader.GetValueByName("enable", 0);
                 
@@ -550,6 +553,11 @@ namespace SceneManager {
                 
                 // Free the image data
                 stbi_image_free(TextureData);
+                
+#ifdef  DEVELOPMENT_MODE_
+                LogWrite(strings::LogStringAdd + strings::AssetTypeMaterial + AssetLoader.GetAssetName() + strings::SpaceDouble + IntToString(Width) + "x" + IntToString(Height) + strings::SpaceDouble + "Channels:" + strings::SpaceSingle + IntToString(Channels));
+#endif  
+                
                 
 #ifdef  LOG_GL_ERRORS_
                 RenderLibrary::LogGLErrors(strings::AssetTypeMaterial);
@@ -754,7 +762,7 @@ namespace SceneManager {
                 
                 // Load and check the asset
                 SceneManager::ResourceManagement::AssetLoader AssetLoader( FilePath );
-                if (!AssetLoader.IsAssetLoaded()) {
+                if (!AssetLoader.GetAssetState()) {
                     
                     LogWrite(strings::LogStringError + strings::AssetTypeShader + FilePath);
                     
@@ -762,16 +770,16 @@ namespace SceneManager {
                 }
                 
                 // Check if the asset is already loaded
-                if (Renderer ->FindShader(AssetLoader.AssetName) != nullptr) return nullptr;
+                if (Renderer ->FindShader(AssetLoader.GetAssetName()) != nullptr) return nullptr;
                 
                 // Create the asset
                 Shader* ShaderPtr = Renderer ->CreateShader();
                 
                 // Name the asset
-                ShaderPtr ->Name = AssetLoader.AssetName;
+                ShaderPtr ->Name = AssetLoader.GetAssetName();
                 
 #ifdef  DEVELOPMENT_MODE_
-                LogWrite(strings::LogStringAdd + strings::AssetTypeShader + AssetLoader.AssetName);
+                LogWrite(strings::LogStringAdd + strings::AssetTypeShader + AssetLoader.GetAssetName());
 #endif  
                 
                 // Assign asset values
@@ -870,7 +878,7 @@ namespace SceneManager {
                 
                 // Load and check the asset
                 SceneManager::ResourceManagement::AssetLoader AssetLoader( FilePath );
-                if (!AssetLoader.IsAssetLoaded()) {
+                if (!AssetLoader.GetAssetState()) {
                     
                     LogWrite(strings::LogStringError + strings::AssetTypeActor + FilePath);
                     
@@ -878,17 +886,17 @@ namespace SceneManager {
                 }
                 
                 // Check if the asset is already loaded
-                if (ActorAI::AI ->FindActor(AssetLoader.AssetName) != nullptr) return nullptr;
+                if (ActorAI::AI ->FindActor(AssetLoader.GetAssetName()) != nullptr) return nullptr;
                 
                 // Create the asset
                 Actor* ActorPtr = ActorAI::AI ->CreateActor();
                 
                 // Name the asset
-                ActorPtr ->Name         = AssetLoader.AssetName;
+                ActorPtr ->Name         = AssetLoader.GetAssetName();
                 ActorPtr ->OriginalName = "";
                 
 #ifdef  DEVELOPMENT_MODE_
-                LogWrite(strings::LogStringAdd + strings::AssetTypeActor + AssetLoader.AssetName);
+                LogWrite(strings::LogStringAdd + strings::AssetTypeActor + AssetLoader.GetAssetName());
 #endif  
                 
                 // Get asset values
@@ -966,7 +974,180 @@ namespace SceneManager {
                 return ActorPtr;
             }
             
+            Scene* LoadScene(std::string FilePath) {
+                
+                // Load and check the asset
+                SceneManager::ResourceManagement::AssetLoader AssetLoader( FilePath + strings::ExtScene );
+                if (!AssetLoader.GetAssetState()) {
+                    
+                    LogWrite(strings::LogStringError + strings::AssetTypeScene + FilePath);
+                    
+                    return nullptr;
+                }
+                
+                // If the asset already exists, add the scene to the current scene graph
+                Scene* ScenePtr = SceneMgr ->FindScene( AssetLoader.GetAssetName() );
+                if (ScenePtr == nullptr) {
+                    
+                    // Create the asset
+                    ScenePtr = SceneMgr ->CreateScene();
+                    
+                    // Name the asset
+                    ScenePtr ->Name = AssetLoader.GetAssetName();
+                    
+                }
+                
+                
+                LogWrite(strings::AddSymbol + strings::SpaceSingle + strings::AssetTypeScene + AssetLoader.GetAssetName());
+                
+                //
+                // Process scene definitions
+                for (std::map<std::string, std::vector<std::string>>::iterator it = AssetLoader.AssetData.begin(); it != AssetLoader.AssetData.end(); it++) {
+                    
+                    // Get the path to the definition/location file
+                    std::string FilePath = it ->first;
+                    
+                    if (StringFind(strings::ExtDefinition, FilePath)) {
+                        
+                        // Load the definition file
+                        SceneManager::AssetParsers::LoadDefinitions( FilePath );
+                        
+                        ScenePtr ->DefinitionsFiles.push_back( FilePath );
+                        
+                    }
+                    
+                }
+                
+                //
+                // Process scene entity instances
+                for (std::map<std::string, std::vector<std::string>>::iterator it = AssetLoader.AssetData.begin(); it != AssetLoader.AssetData.end(); it++) {
+                    
+                    // Get the path to the definition/location file
+                    std::string FilePath = it ->first;
+                    
+                    if (StringFind(strings::ExtLocation, FilePath)) {
+                        
+                        // Load the object location file
+                        SceneManager::AssetParsers::LoadLocations( ScenePtr, FilePath );
+                        
+                        ScenePtr ->LocationsFiles.push_back( FilePath );
+                        
+                    }
+                    
+                }
+                
+                return ScenePtr;
+            }
+            
         }
+        
+        
+        // Save the current scene
+        bool SceneSave(Scene* ScenePtr) {
+            
+            // Get asset name and file path
+            std::string AssetName = ScenePtr ->Name;
+            std::string AssetPath = ScenePtr ->Path;
+            
+            std::string FilePath;
+            std::ofstream FileStream;
+            
+            for (std::vector<std::string>::iterator it = ScenePtr ->LocationsFiles.begin(); it != ScenePtr ->LocationsFiles.end(); it++) {
+                
+                FilePath = *it;
+                
+            }
+            
+            FileStream.open( FilePath );
+            if (FileStream.is_open()) {
+                
+                //
+                // Save object locations
+                
+                for (std::vector<Entity*>::iterator it = ScenePtr ->EntityList.begin(); it != ScenePtr ->EntityList.end(); it++) {
+                    
+                    Entity* EntityPtr = *it;
+                    
+                    POSITION Position = EntityPtr ->Position;
+                    std::string xx = DoubleToString(Position.x);
+                    std::string yy = DoubleToString(Position.y);
+                    std::string zz = DoubleToString(Position.z);
+                    
+                    ROTATION Rotation = EntityPtr ->Rotation;
+                    std::string yaw   = DoubleToString(Rotation.y);
+                    std::string pitch = DoubleToString(Rotation.p);
+                    std::string roll  = DoubleToString(Rotation.r);
+                    
+                    ROTATION Scale = EntityPtr ->Scale;
+                    std::string width  = DoubleToString(Scale.y);
+                    std::string height = DoubleToString(Scale.p);
+                    std::string depth  = DoubleToString(Scale.r);
+                    
+                    std::string Translation = strings::SpaceDouble;
+                    
+                    std::string ColliderName = strings::SpaceDouble + strings::SpaceSingle + EntityPtr ->ColliderName + strings::SpaceSingle;
+                    std::string Mass    = FloatToString(EntityPtr ->AttachedBody ->getMass()) + strings::SpaceSingle;
+                    std::string DampLin = FloatToString(EntityPtr ->AttachedBody ->getLinearDamping()) + strings::SpaceSingle;
+                    std::string DampAng = FloatToString(EntityPtr ->AttachedBody ->getAngularDamping()) + strings::SpaceDouble;
+                    
+                    std::string Attachemnts = strings::SpaceDouble;
+                    
+                    // Translation string
+                    Translation += xx + strings::SpaceSingle + yy + strings::SpaceSingle + zz + strings::SpaceSingle;
+                    Translation += yaw + strings::SpaceSingle + pitch + strings::SpaceSingle + roll + strings::SpaceSingle;
+                    Translation += width + strings::SpaceSingle + height + strings::SpaceSingle + depth + strings::SpaceSingle;
+                    
+                    // Get name
+                    std::string Name = EntityPtr ->AttachedMesh ->Name + strings::SpaceDouble;
+                    
+                    // Add light attachments
+                    for (std::vector<Light*>::iterator it = EntityPtr ->LightList.begin(); it != EntityPtr ->LightList.end(); ++it) {
+                        
+                        Light* LightPtr = *it;
+                        
+                        std::string LightName = LightPtr ->OriginalName;
+                        
+                        Attachemnts += LightName + strings::SpaceSingle;
+                        
+                    }Attachemnts += strings::SpaceSingle;
+                    
+                    // Consolidate string and write to the file
+                    FileStream << Name << Translation << ColliderName << Mass << DampLin << DampAng << Attachemnts << std::endl;
+                    
+                }
+                
+                for (std::vector<Actor*>::iterator it = ScenePtr ->ActorList.begin(); it != ScenePtr ->ActorList.end(); it++) {
+                    
+                    Actor* ActorPtr = *it;
+                    std::string Name = ActorPtr ->OriginalName;
+                    
+                    POSITION Position = ActorPtr ->Position;
+                    std::string xx = DoubleToString(Position.x);
+                    std::string yy = DoubleToString(Position.y);
+                    std::string zz = DoubleToString(Position.z);
+                    
+                    ROTATION Rotation = ActorPtr ->Rotation;
+                    std::string yaw   = DoubleToString(Rotation.y);
+                    std::string pitch = DoubleToString(Rotation.p);
+                    std::string roll  = DoubleToString(Rotation.r);
+                    
+                    std::string Translation = strings::SpaceDouble;
+                    Translation += xx + strings::SpaceSingle + yy + strings::SpaceSingle + zz + strings::SpaceSingle;
+                    Translation += yaw + strings::SpaceSingle + pitch + strings::SpaceSingle + roll + strings::SpaceDouble;
+                    
+                    std::string ColliderName = strings::SpaceDouble + strings::SpaceSingle + ActorPtr ->ColliderName + strings::SpaceSingle;
+                    
+                    // Consolidate string and write to the file
+                    FileStream << Name << Translation << ColliderName << std::endl;
+                    
+                }
+                
+                FileStream.close();
+            }
+            
+            return true;
+        }
+        
         
     }
     

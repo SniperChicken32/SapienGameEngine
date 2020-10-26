@@ -20,7 +20,7 @@ struct SoundScenery {
     
     Sound* SoundPtr;
     
-    POSITION Position;
+    glm::vec3 Position;
     
     float Volume;
     float Range;

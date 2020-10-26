@@ -5,6 +5,19 @@
 
 #include "InputSystem/Keys.h"
 
+void      CursorSetPosition(int xx, int yy) {SetCursorPos( xx, yy );}
+glm::vec2 CursorGetPosition(void) {
+    POINT Pos;
+    glm::vec2 MousePos;
+    
+    GetCursorPos(&Pos);
+    
+    MousePos.x = Pos.x;
+    MousePos.y = Pos.y;
+    
+    return MousePos;
+}
+
 namespace InputSystem {
 
     class InputSystem{
@@ -41,9 +54,11 @@ namespace InputSystem {
         
     };
     
-    // Input system singleton
+    /** Input system singleton object pointer.*/
     InputSystem* Input = nullptr;
+    /** Initiate the input system singleton object.*/
     bool InitiateInputSystem(void) {if (Input == nullptr) {Input = new InputSystem(); return true;}return false;}
+    /** Shutdown the input system singleton object.*/
     bool ShutdownInputSystem(void) {if (Input != nullptr) {delete Input; Input = nullptr; return true;}return false;}
     
 }

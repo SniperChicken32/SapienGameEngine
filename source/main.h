@@ -12,12 +12,19 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <thread>
-#include <time.h>
+//#include <thread>
+//#include <time.h>
 
-
-// Engine configuration settings
+// Configuration settings
 #include "Configuration/Configuration.h"
+
+// My standard includes
+#include "std/timer.h"
+#include "std/strings.h"
+#include "std/types.h"
+#include "std/logging.h"
+#include "std/math.h"
+
 
 // Input system
 #include "InputSystem/InputSystem.h"
@@ -29,7 +36,7 @@
 #include "RenderSystem/RenderMain.h"
 
 // AI system
-#include "ActorAI/ActorSystem.h"
+#include "ActorSystem/ActorMain.h"
 
 // Scene management
 #include "SceneManager/SceneMain.h"

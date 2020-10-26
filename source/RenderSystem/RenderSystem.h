@@ -1,13 +1,6 @@
 //
 // Render system
 
-#ifndef RENDER_SYSTEM_
-#define RENDER_SYSTEM_
-
-#ifndef STRUCT_GENERIC_
-#define STRUCT_GENERIC_
-
-// Viewport area
 struct   VIEWPORT   {int x, y, w, h;};
 
 // Colors
@@ -18,14 +11,6 @@ struct   VIEWPORT   {int x, y, w, h;};
 #define  POSITION   glm::vec3
 #define  ROTATION   glm::vec3
 #define  SCALE      glm::vec3
-
-#endif
-
-// OpenGL base library
-#include "RenderSystem/RenderLibrary.h"
-
-// Enumerators
-#include "RenderSystem/Enumerators.h"
 
 // Render assets
 #include "RenderSystem/Assets/Light.h"
@@ -40,7 +25,7 @@ struct   VIEWPORT   {int x, y, w, h;};
 
 class RenderSystem {
     
-HWND  WindowHandle;
+    HWND  WindowHandle;
     HDC   DeviceContext;
     HGLRC RenderContext;
     
@@ -103,75 +88,115 @@ HWND  WindowHandle;
     RenderSystem();
     ~RenderSystem();
     
-    // Set and release the render target
+    /** Sets the current rendering target.*/
     GLenum SetRenderTarget(HWND vHandle);
+    /** Frees the current rendering target.*/
     void   ReleaseRenderTarget(void);
     
-    // Render objects
+    /** Creates an entity object and returns its pointer.*/
     Entity*       CreateEntity         (double x, double y, double z);
+    /** Destroys an entity object.*/
     bool          DestroyEntity        (Entity*);
     
+    /** Creates a mesh object and returns its pointer.*/
     Mesh*         CreateMesh           (void);
+    /** Destroys a mesh object.*/
     bool          DestroyMesh          (Mesh*);
+    /** Finds a mesh object by the given name.*/
     Mesh*         FindMesh             (std::string);
     
+    /** Creates a material object and returns its pointer.*/
     Material*     CreateMaterial       (void);
+    /** Destroys a material object.*/
     bool          DestroyMaterial      (Material*);
+    /** Finds a material object by the given name.*/
     Material*     FindMaterial         (std::string);
     
+    /** Creates a shader object and returns its pointer.*/
     Shader*       CreateShader         (void);
+    /** Destroys a shader object.*/
     bool          DestroyShader        (Shader*);
+    /** Finds a shader object by the given name.*/
     Shader*       FindShader           (std::string);
     
-    // Special render objects
+    /** Creates a light object and returns its pointer.*/
     Light*        CreateLight          (void);
+    /** Destroys a light object.*/
     bool          DestroyLight         (Light*);
+    /** Finds a light object by the given name.*/
     Light*        FindLight            (std::string);
     
+    /** Creates a camera object and returns its pointer.*/
     Camera*       CreateCamera         (double x, double y, double z);
+    /** Destroys a camera object.*/
     bool          DestroyCamera        (Camera*);
+    /** Finds a camera object by the given name.*/
     Camera*       FindCamera           (std::string);
     
-    // Render system attachments
+    /** Attaches a camera object to the render system.*/
     void          AttachCamera         (Camera*);
+    /** Frees any attached camera objects.*/
     void          DetachCamera         (void);
+    
+    /** Attaches a sky entity to the render system.*/
     void          AttachSky            (Entity* EntityPtr) {
         CurrentSky = EntityPtr;
     }
+    /** Frees any attached sky entities.*/
     void          DetachSky            (void) {
         CurrentSky = nullptr;
     }
     
-    // Settings
+    /** Enables face culling.*/
     void          SetCulling           (bool State)  {if (State) {glEnable(GL_CULL_FACE);} else {glDisable(GL_CULL_FACE);}}
+    /** Enables background clearing before drawing.*/
     void          SetFrameClear        (bool State)  {DoClearFrame = State;}
+    /** Enables the multi-sampling state.*/
     void          SetMultiSample       (bool State)  {if (State) {glEnable(GL_MULTISAMPLE);} else {glDisable(GL_MULTISAMPLE);}}
-    void          SetViewport          (int xx, int yy, int ww, int hh) {glViewport(xx,yy,ww,hh);}
+    /** Sets the area of the viewport.*/
+    void          SetViewport          (int xx, int yy, int ww, int hh) {glViewport(xx,yy,ww,hh); ViewPort.x = xx; ViewPort.x = ww; ViewPort.x = yy; ViewPort.x = hh;}
+    /** Sets the area of the viewport.*/
+    int           GetViewportWidth(void) {return this ->ViewPort.w;}
+    /** Sets the area of the viewport.*/
+    int           GetViewportHeight(void) {return this ->ViewPort.h;}
+    /** Sets the background color.*/
     void          SetBackgroundColor   (float rr, float gg, float bb) {Background.r = rr; Background.g = gg; Background.b = bb;}
+    /** Sets the direction in which the triangles are drawn.
+    RENDER_WINDING_CCW  RENDER_WINDING_CW*/
     void          SetTriangleDirection (GLenum Wind) {if (Wind == RENDER_WINDING_CCW) {glFrontFace(GL_CCW);} if (Wind == RENDER_WINDING_CW) {glFrontFace(GL_CW);}}
+    /** Sets the face culling direction.
+    RENDER_CULL_FRONT  RENDER_CULL_BACK*/
     void          SetCullingDirection  (GLenum Cull) {if (Cull == RENDER_CULL_FRONT) {glCullFace(GL_FRONT);} if (Cull == RENDER_CULL_BACK)  {glCullFace(GL_BACK);}}
     
-    // Frame rate
+    /** Draws the current frame using an internal timer to control the frame rate.*/
+    bool          SceneRender          (void);
+    /** Sets the frame rate for the internal frame timer.
+    Default: 120.0*/
     void          SetFrameRate         (float);
     
-    // Render the scene (internal timer)
-    bool          SceneRender          (void);
-    
-    // Clear the current scene
+    /** Destroys all instances of entity and light objects in the render system.*/
     void          SceneClear           (void);
+    
+    /** Destroys all loaded object definitions.*/
     void          DestroyAssetCache    (void);
     
     //
     // Advanced
     
-    // Render queues
+    /** Adds an entity to its assigned render queue group.*/
     void          AddToRenderQueues      (Entity*);
+    /** Removes an entity from render queue groups.*/
     bool          RemoveFromRenderQueues (Entity*);
     
-    // State refresh and update
+    /** Refreshes the render queue groups.*/
     void          RefreshRenderQueue   (void);
+    /** Refreshes the light objects.*/
     void          RefreshLightQueue    (void);
+    /** Refreshes the currently bound rendering asset.*/
     bool          RefreshAssetBindings (Mesh*);
+    
+    //
+    // (Internal functions)
     
     // Render pipeline
     void          RenderPipeline       (void);
@@ -186,15 +211,18 @@ HWND  WindowHandle;
     glm::mat4     SetProjectionByCamera(void);
     
     // Matrix operations
-    glm::mat4     CalculateModelMatrix         (POSITION &PositionWorld, ROTATION &RotationWorld, SCALE &ScaleWorld, POSITION &PositionModel, ROTATION &RotationModel);
+    glm::mat4     CalculateModelMatrix         (POSITION& PositionWorld, ROTATION &RotationWorld, SCALE &ScaleWorld, POSITION &PositionModel, ROTATION &RotationModel);
     glm::mat4     CalculatePerspectiveMatrix   (POSITION& Position, ROTATION& Angle, float& vpFoV, float& vpAspect, double& vpNear, double& vpFar);
-    glm::mat4     CalculateOrthographicMatrix  (POSITION& Position, ROTATION& Angle, float& vpFoV, float& vpAspect, double& vpNear, double& vpFar);
+    glm::mat4     CalculateOrthographicMatrix  (POSITION& Position, ROTATION &Angle, int Width, int Height);
     
 };
 
 // Render system singleton
+/** Render system singleton object pointer.*/
 RenderSystem* Renderer = nullptr;
+/** Initiate the render system singleton object.*/
 bool InitiateRenderSystem(void) {if (Renderer == nullptr) {Renderer = new RenderSystem(); return true;}return false;}
+/** Shutdown the render system singleton object.*/
 bool ShutdownRenderSystem(void) {if (Renderer != nullptr) {delete Renderer; Renderer = nullptr; return true;}return false;}
 
 RenderSystem :: RenderSystem() {
@@ -890,7 +918,7 @@ void RenderSystem :: DestroyAssetCache(void) {
 
 
 //
-// Refresh states
+// Refresh functions
 void RenderSystem :: RefreshRenderQueue(void) {
     
     // Clear render lists
@@ -1045,15 +1073,25 @@ bool RenderSystem :: RefreshAssetBindings(Mesh* MeshPtr) {
                 }
                 if (CurrentMaterial ->UseBlending) {
                     
-                    //
-                    // Should be implemented with uniforms
-                    //
+                    glEnable(GL_BLEND);
                     
-                    // BlendColor.r, BlendColor.g, BlendColor.b, BlendColor.a
-                    // blEquation
+                    glBlendColor(CurrentMaterial ->BlendColor.r, CurrentMaterial ->BlendColor.g, CurrentMaterial ->BlendColor.b, CurrentMaterial ->BlendColor.a);
                     
-                    // UseSeperateAlpha   blColorSource blColorDest blAlphaSource blAlphaDest
-                    // !UseSeperateAlpha  blSource, blDest
+                    glBlendEquation(CurrentMaterial ->blEquation);
+                    
+                    if (CurrentMaterial ->UseSeperateAlpha) {
+                        
+                        glBlendFuncSeparate(CurrentMaterial ->blColorSource, CurrentMaterial ->blColorDest, CurrentMaterial ->blAlphaSource, CurrentMaterial ->blAlphaDest);
+                        
+                    } else {
+                        
+                        glBlendFunc(CurrentMaterial ->blSource, CurrentMaterial ->blDest);
+                        
+                    }
+                    
+                } else {
+                    
+                    glDisable(GL_BLEND);
                     
                 }
                 
@@ -1061,7 +1099,6 @@ bool RenderSystem :: RefreshAssetBindings(Mesh* MeshPtr) {
                 
                 // Bind the new asset
                 CurrentMaterial = CurrentMesh ->AttachedMaterial;
-                
                 
                 // Clear bindings
                 glBindTexture(GL_TEXTURE_2D, 0);
@@ -1117,7 +1154,7 @@ bool RenderSystem :: SceneRender(void) {
     // Frame timing
     
     // Query frame timer
-    TimeDelta = FrameTimer ->Check(true);
+    TimeDelta = this ->FrameTimer ->Check(true);
     TimeAccumulator += TimeDelta;
     
     // Calculate remaining time difference
@@ -1130,7 +1167,7 @@ bool RenderSystem :: SceneRender(void) {
     if (TimeAccumulator > FrameRateMs) {
         
         // Upper limit
-        if (TimeAccumulator > 100.0) {TimeAccumulator = 100.0;}
+        if (TimeAccumulator > 10.0) {TimeAccumulator = 10.0;}
         
         // Drain the accumulator
         while (TimeAccumulator > 0.0) { TimeAccumulator -= FrameRateMs; }
@@ -1179,7 +1216,7 @@ bool RenderSystem :: SceneRender(void) {
     // Render
     
     // Check whether to render the frame
-    if (!RenderThisFrame) {return false;}
+    if (!RenderThisFrame) return false;
     
     // Begin the render pipeline
     this ->RenderPipeline();
@@ -1358,7 +1395,7 @@ void RenderSystem :: RenderEntity(Entity* CurrentEntity, glm::mat4 &ProjectionMa
         CamAngle.r = CamPos.z + tan( DegToRad(   0.0 ) );
         
         // Calculate the view and projection matrices
-        glm::mat4 OrthographicMatrix = CalculateOrthographicMatrix(CamPos, CamAngle, vpFov, vpAspect, vpNear, vpFar);
+        glm::mat4 OrthographicMatrix = CalculateOrthographicMatrix(CamPos, CamAngle, ViewPort.w, ViewPort.h);
         
         CurrentShader ->SetProjectionMatrix( OrthographicMatrix );
         
@@ -1518,10 +1555,8 @@ glm::mat4 RenderSystem :: SetProjectionByCamera(void) {
             // Calculate the view and projection matrices
             return CalculateOrthographicMatrix(CamPos,
                                                CamAngle,
-                                               CurrentCamera ->vpFoV,
-                                               CurrentCamera ->vpAspect,
-                                               CurrentCamera ->vpNear,
-                                               CurrentCamera ->vpFar);
+                                               Renderer ->GetViewportWidth(),
+                                               Renderer ->GetViewportHeight());
             
         }
         
@@ -1588,28 +1623,15 @@ glm::mat4 RenderSystem :: CalculatePerspectiveMatrix(POSITION &Position, ROTATIO
     
     return ViewProj;
 }
-glm::mat4 RenderSystem :: CalculateOrthographicMatrix(POSITION &Position, ROTATION &Angle, float &vpFoV, float &vpAspect, double &vpNear, double &vpFar) {
+glm::mat4 RenderSystem :: CalculateOrthographicMatrix(POSITION &Position, ROTATION &Angle, int Width, int Height) {
     
     glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
     
-    float OrthoHeight, OrthoWidth, OrthoDepthNear, OrthoDepthFar;
-    OrthoWidth  = 10.0f;
-    OrthoHeight = 10.0f;
-    OrthoDepthNear =  1000000000.0f;
-    OrthoDepthFar  =  1000000000.0f;
-    
     glm::mat4 View = glm::lookAt(glm::vec3(Position.x, Position.y, Position.z), glm::vec3(Angle.x, Angle.y, Angle.z), Up);
-    glm::mat4 Ortho = glm::ortho(-OrthoWidth,     OrthoWidth,
-                                 -OrthoHeight,    OrthoHeight,
-                                 -OrthoDepthNear, OrthoDepthFar);
+    glm::mat4 Ortho = glm::ortho(0.0f, (float)Width,
+                                 0.0f, (float)Height);
     
     glm::mat4 ViewProj = (Ortho * View);
     return ViewProj;
 }
-
-#endif
-
-
-
-
 

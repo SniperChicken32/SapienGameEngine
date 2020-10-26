@@ -1,9 +1,6 @@
 //
 // Scene management system
 
-#ifndef SCENE_SYSTEM_
-#define SCENE_SYSTEM_
-
 namespace SceneManager {
     
     struct Scene {
@@ -27,7 +24,10 @@ namespace SceneManager {
             
         }
         
+        /** Adds an entity object to the scene.*/
         void AddEntity(Entity* EntityPtr) {EntityList.push_back(EntityPtr);}
+        
+        /** Removes an entity object from the scene.*/
         bool RemoveEntity(Entity* EntityPtr) {
             
             for (std::vector<Entity*>::iterator it = EntityList.begin(); it != EntityList.end(); ++it) {
@@ -42,6 +42,8 @@ namespace SceneManager {
             
             return false;
         }
+        
+        /** Destroys and removes an entity object from the scene.*/
         bool DestroyEntity(Entity* EntityPtr) {
             
             for (std::vector<Entity*>::iterator it = EntityList.begin(); it != EntityList.end(); ++it) {
@@ -59,7 +61,10 @@ namespace SceneManager {
             return false;
         }
         
+        /** Adds an actor object to the scene.*/
         void AddActor(Actor* ActorPtr) {ActorList.push_back(ActorPtr);}
+        
+        /** Removes an actor object from the scene.*/
         bool RemoveActor(Actor* ActorPtr) {
             
             for (std::vector<Actor*>::iterator it = ActorList.begin(); it != ActorList.end(); ++it) {
@@ -74,6 +79,8 @@ namespace SceneManager {
             
             return false;
         }
+        
+        /** Destroys and removes an actor object from the scene.*/
         bool DestroyActor(Actor* ActorPtr) {
             
             for (std::vector<Actor*>::iterator it = ActorList.begin(); it != ActorList.end(); ++it) {
@@ -91,6 +98,7 @@ namespace SceneManager {
             return false;
         }
         
+        /** Activates all objects in the scene.*/
         void Activate(void) {
             
             // Entities
@@ -140,6 +148,8 @@ namespace SceneManager {
             }
             
         }
+        
+        /** Deactivates all objects in the scene.*/
         void Deactivate(void) {
             
             // Entities
@@ -190,7 +200,7 @@ namespace SceneManager {
             
         }
         
-        // Clear and destroy all objects in the scene
+        /** Destroys all objects in the scene.*/
         void Clear(void) {
             
             // Clear entities
@@ -217,8 +227,10 @@ namespace SceneManager {
             
         }
         
-        // Query the scene
+        /** Returns the number of entity objects in the scene.*/
         int GetEntityNumber(void) {return EntityList.size();}
+        
+        /** Returns the number of actor objects in the scene.*/
         int GetActorNumber(void) {return ActorList.size();}
         
     };
@@ -232,17 +244,28 @@ namespace SceneManager {
         SceneSystem();
         ~SceneSystem();
         
+        /** Creates a new scene object and returns its pointer.*/
         Scene* CreateScene(void);
+        
+        /** Finds a scene object and returns its pointer.*/
         Scene* FindScene(std::string SceneName);
+        
+        /** Destroys a scene object.*/
         bool DestroyScene(Scene* ScenePtr);
         
-        void DestroyAllScenes(void);
+        /** Clears all scenes in the scene system.*/
         void ClearAllScenes(void);
+        
+        /** Destroys all scenes in the scene system.*/
+        void DestroyAllScenes(void);
         
     };
     
+    /** Scene system singleton object pointer.*/
     SceneSystem* SceneMgr = nullptr;
+    /** Initiate the scene system singleton object.*/
     bool InitiateSceneSystem(void) {if (SceneMgr == nullptr) {SceneMgr = new SceneSystem(); return true;}return false;}
+    /** Shutdown the scene system singleton object.*/
     bool ShutdownSceneSystem(void) {if (SceneMgr != nullptr) {delete SceneMgr; SceneMgr = nullptr; return true;}return false;}
     
     SceneSystem :: SceneSystem() {
@@ -271,10 +294,9 @@ namespace SceneManager {
         
         for (std::vector<Scene*>::iterator it = SceneList.begin(); it != SceneList.end(); ++it) {
             Scene* ScenePtr = *it;
-            if (ScenePtr ->Name == SceneName) {
-                
-                return ScenePtr;
-            }
+            
+            if (ScenePtr ->Name == SceneName) return ScenePtr;
+            
         }
         
         return nullptr;
@@ -283,6 +305,7 @@ namespace SceneManager {
         
         for (std::vector<Scene*>::iterator it = SceneList.begin(); it != SceneList.end(); ++it) {
             Scene* SceneListPtr = *it;
+            
             if (ScenePtr == SceneListPtr) {
                 
                 ScenePtr ->Clear();
@@ -293,9 +316,22 @@ namespace SceneManager {
                 
                 return true;
             }
+            
         }
         
         return false;
+    }
+    
+    void   SceneSystem :: ClearAllScenes(void) {
+        
+        for (std::vector<Scene*>::iterator it = SceneList.begin(); it != SceneList.end(); ++it) {
+            
+            Scene* ScenePtr = *it;
+            
+            ScenePtr ->Clear();
+            
+        }
+        
     }
     
     void   SceneSystem :: DestroyAllScenes(void) {
@@ -312,20 +348,5 @@ namespace SceneManager {
         
     }
     
-    void   SceneSystem :: ClearAllScenes(void) {
-        
-        for (std::vector<Scene*>::iterator it = SceneList.begin(); it != SceneList.end(); ++it) {
-            
-            Scene* ScenePtr = *it;
-            
-            ScenePtr ->Clear();
-            
-        }
-        
-    }
-    
-    
 }
-
-#endif
 

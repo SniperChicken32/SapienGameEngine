@@ -59,6 +59,6 @@ const std::string EVENT_LOG_FILENAME = "event_log.txt";
 // Engine plug-ins
 #include "Configuration/Plugins.h"
 
-// Platform specific functions
-#include "Configuration/Platform.h"
+// Constant string
+#include "ConstStrings.h"
 

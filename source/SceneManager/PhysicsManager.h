@@ -3,10 +3,10 @@
 
 namespace SceneManager {
     
-    // Physics resource management
+    /** Physics resource management.*/
     namespace PhysicsManagement {
         
-        // Custom event listener class
+        /** Custom event listener class.*/
         class EventListener : public Physics::EventListener {
             
             // Override the onContact() method 
@@ -57,9 +57,50 @@ namespace SceneManager {
             
         };
         
+        /** Custom ray cast callback class.*/
+        class MyCallbackClass : public Physics::RaycastCallback {
+            
+            public: 
+            
+            virtual Physics::decimal notifyRaycastHit(const Physics::RaycastInfo& info) { 
+                
+                Physics::Vector3 worldPoint  = info.worldPoint;
+                Physics::Vector3 worldNormal = info.worldNormal;
+                
+                // Display the world hit point coordinates 
+                //std::cout << "Hit: " << worldPoint.x << "  " << worldPoint.y << "  " << worldPoint.z << std::endl;
+                
+                
+                /// Fraction distance of the hit point between point1 and point2 of the ray
+                /// The hit point "p" is such that p = point1 + hitFraction * (point2 - point1)
+                float hitFraction = info.hitFraction;
+                
+                /// Mesh subpart index that has been hit (only used for triangles mesh and -1 otherwise)
+                int meshSubpart = info.meshSubpart;
+                
+                /// Hit triangle index (only used for triangles mesh and -1 otherwise)
+                int triangleIndex = info.triangleIndex;
+                
+                /// Pointer to the hit collision body
+                Physics::CollisionBody* body = info.body;
+                
+                /// Pointer to the hit collider
+                Physics::Collider* collider = info.collider;
+                
+                
+                // Return a fraction of 1.0 to gather all hits 
+                return Physics::decimal(1.0); 
+            }
+            
+        };
+        
+        // Test casting against a rigid body`s collider
+        //MyCallbackClass CallbackObject;
+        //PhysicsWorld ->raycast(ray, &CallbackObject);
         
         
-        // Collider proxy object
+        
+        /** Collider proxy object.*/
         struct CollisionProxy {
             
             std::string AssetName;
@@ -99,85 +140,105 @@ namespace SceneManager {
             
         };
         
-        // Collider proxy list
-        std::vector<CollisionProxy*> CollisionList;
-        
-        // Create collider proxy
-        CollisionProxy* CreateBoxProxy(std::string AssetName, short int AssetIndex, float x, float y, float z) {
+        /** Collider proxy object management system.*/
+        class ColliderSystem {
             
-            Physics::Vector3 BoxScale   = Physics::Vector3(x, y, z);
-            Physics::BoxShape* Collider = PhysicsCommon ->createBoxShape(BoxScale);
+            std::vector<CollisionProxy*> CollisionList;
             
-            CollisionProxy* CollisionProxyPtr = new CollisionProxy();
+            public:
             
-            CollisionProxyPtr ->AssetName = AssetName;
-            CollisionProxyPtr ->AssetIndex = AssetIndex;
-            CollisionProxyPtr ->AssetType = 0;
-            
-            CollisionProxyPtr ->CollisionBox = Collider;
-            
-            CollisionList.push_back(CollisionProxyPtr);
-            
-            return CollisionProxyPtr;
-        }
-        CollisionProxy* CreateSphereProxy(std::string AssetName, short int AssetIndex, float Radius) {
-            
-            Physics::SphereShape* Collider = PhysicsCommon ->createSphereShape(Radius);
-            
-            CollisionProxy* CollisionProxyPtr = new CollisionProxy();
-            
-            CollisionProxyPtr ->AssetName = AssetName;
-            CollisionProxyPtr ->AssetIndex = AssetIndex;
-            CollisionProxyPtr ->AssetType = 1;
-            
-            CollisionProxyPtr ->CollisionSphere = Collider;
-            
-            CollisionList.push_back(CollisionProxyPtr);
-            
-            return CollisionProxyPtr;
-        }
-        CollisionProxy* CreateCapsuleProxy(std::string AssetName, short int AssetIndex, float Radius, float Length) {
-            
-            Physics::CapsuleShape* Collider = PhysicsCommon ->createCapsuleShape(Radius, Length);
-            
-            CollisionProxy* CollisionProxyPtr = new CollisionProxy();
-            
-            CollisionProxyPtr ->AssetName = AssetName;
-            CollisionProxyPtr ->AssetIndex = AssetIndex;
-            CollisionProxyPtr ->AssetType = 2;
-            
-            CollisionProxyPtr ->CollisionCapsule = Collider;
-            
-            CollisionList.push_back(CollisionProxyPtr);
-            
-            return CollisionProxyPtr;
-        }
-        
-        // Find collider proxy
-        CollisionProxy* FindProxy(std::string AssetName) {
-            
-            CollisionProxy* CollisionPtr;
-            for (std::vector<CollisionProxy*>::iterator it = CollisionList.begin(); it != CollisionList.end(); ++it) {
-                CollisionPtr = *it;
-                if (CollisionPtr ->AssetName == AssetName) {return CollisionPtr;}
+            ColliderSystem() {
+                
+                CollisionList.clear();
+                
             }
-            return nullptr;
-        }
-        
-        // Destroy ALL collider proxies
-        void DestroyAllProxies(void) {
             
-            CollisionProxy* CollisionPtr;
-            for (std::vector<CollisionProxy*>::iterator it = CollisionList.begin(); it != CollisionList.end(); ++it) {
-                CollisionPtr = *it;
-                delete CollisionPtr;
+            /** Creates a box collision proxy object and returns its pointer.*/
+            CollisionProxy* CreateBoxProxy(std::string AssetName, short int AssetIndex, float x, float y, float z) {
+                
+                Physics::Vector3 BoxScale   = Physics::Vector3(x, y, z);
+                Physics::BoxShape* Collider = PhysicsCommon ->createBoxShape(BoxScale);
+                
+                CollisionProxy* CollisionProxyPtr = new CollisionProxy();
+                
+                CollisionProxyPtr ->AssetName = AssetName;
+                CollisionProxyPtr ->AssetIndex = AssetIndex;
+                CollisionProxyPtr ->AssetType = 0;
+                
+                CollisionProxyPtr ->CollisionBox = Collider;
+                
+                this ->CollisionList.push_back(CollisionProxyPtr);
+                
+                return CollisionProxyPtr;
             }
-            CollisionList.clear();
-        }
+            /** Creates a sphere collision proxy object and returns its pointer.*/
+            CollisionProxy* CreateSphereProxy(std::string AssetName, short int AssetIndex, float Radius) {
+                
+                Physics::SphereShape* Collider = PhysicsCommon ->createSphereShape(Radius);
+                
+                CollisionProxy* CollisionProxyPtr = new CollisionProxy();
+                
+                CollisionProxyPtr ->AssetName = AssetName;
+                CollisionProxyPtr ->AssetIndex = AssetIndex;
+                CollisionProxyPtr ->AssetType = 1;
+                
+                CollisionProxyPtr ->CollisionSphere = Collider;
+                
+                this ->CollisionList.push_back(CollisionProxyPtr);
+                
+                return CollisionProxyPtr;
+            }
+            /** Creates a capsule collision proxy object and returns its pointer.*/
+            CollisionProxy* CreateCapsuleProxy(std::string AssetName, short int AssetIndex, float Radius, float Length) {
+                
+                Physics::CapsuleShape* Collider = PhysicsCommon ->createCapsuleShape(Radius, Length);
+                
+                CollisionProxy* CollisionProxyPtr = new CollisionProxy();
+                
+                CollisionProxyPtr ->AssetName = AssetName;
+                CollisionProxyPtr ->AssetIndex = AssetIndex;
+                CollisionProxyPtr ->AssetType = 2;
+                
+                CollisionProxyPtr ->CollisionCapsule = Collider;
+                
+                this ->CollisionList.push_back(CollisionProxyPtr);
+                
+                return CollisionProxyPtr;
+            }
+            
+            /** Finds a collision proxy with the given name and returns its pointer.*/
+            CollisionProxy* FindProxy(std::string AssetName) {
+                
+                CollisionProxy* CollisionPtr;
+                for (std::vector<CollisionProxy*>::iterator it = this ->CollisionList.begin(); it != this ->CollisionList.end(); ++it) {
+                    CollisionPtr = *it;
+                    if (CollisionPtr ->AssetName == AssetName) {return CollisionPtr;}
+                }
+                return nullptr;
+            }
+            
+            /** Destroys all proxy objects in this manager.*/
+            void DestroyAllProxies(void) {
+                
+                CollisionProxy* CollisionPtr;
+                for (std::vector<CollisionProxy*>::iterator it = this ->CollisionList.begin(); it != this ->CollisionList.end(); ++it) {
+                    CollisionPtr = *it;
+                    delete CollisionPtr;
+                }
+                this ->CollisionList.clear();
+            }
+            
+            
+        };
         
+        /** Collision system singleton object pointer.*/
+        ColliderSystem* ColliderMgr = nullptr;
+        /** Initiate the Collision system singleton object.*/
+        bool InitiateColliderSystem(void) {if (ColliderMgr == nullptr) {ColliderMgr = new ColliderSystem(); return true;}return false;}
+        /** Shutdown the Collision system singleton object.*/
+        bool ShutdownColliderSystem(void) {if (ColliderMgr != nullptr) {delete ColliderMgr; ColliderMgr = nullptr; return true;}return false;}
         
-        
-        // Create a rigid body at the specified position
+        /** Create a rigid body at the specified position.*/
         Physics::RigidBody* CreateRigidBody(double x=0.0, double y=0.0, double z=0.0) {
             
             Physics::Vector3    Position   = Physics::Vector3(x, y, z);

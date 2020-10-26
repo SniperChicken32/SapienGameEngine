@@ -7,8 +7,17 @@
 // Sandbox layer
 #include "sandbox.h"
 
+
+float RandomF(void) {
+    
+    int Value = rand() % 100 + 1;
+    
+    return StringToFloat( IntToString( Value ) ) * 0.1;
+}
+
+
 //
-// Windows application entry point
+// Windows entry point
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     
     // Handle to the window and command console
@@ -110,10 +119,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     SceneManager::PhysicsManagement::EventListener listener;
     PhysicsWorld ->setEventListener(&listener);
     
+    // Initiate the collision proxy system
+    SceneManager::PhysicsManagement::InitiateColliderSystem();
     
     //
-    // Initiate input system and scene manager
+    // Initiate input system
     InputSystem::InitiateInputSystem();
+    
+    //
+    // Initiate scene system
     SceneManager::InitiateSceneSystem();
     
     //
@@ -150,7 +164,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     SandboxApp ->Create();
     
     // Initiate random number generator
-    srand( time(NULL) );
+    srand( (unsigned int)(time(NULL) * time(NULL)) );
     
     //
     // Main loop
@@ -243,7 +257,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ShutdownRenderSystem();
     
     // Destroy physics colliders
-    SceneManager::PhysicsManagement::DestroyAllProxies();
+    SceneManager::PhysicsManagement::ColliderMgr ->DestroyAllProxies();
+    
+    // Shutdown the collision proxy system
+    SceneManager::PhysicsManagement::ShutdownColliderSystem();
     
     // Shutdown physics system
     PhysicsCommon ->destroyPhysicsWorld(PhysicsWorld);

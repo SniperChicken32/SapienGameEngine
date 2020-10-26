@@ -705,45 +705,73 @@ namespace SceneManager {
                 // Terrain generation
                 if (Strings[0] == "generate"){
                     
-                    // "collPlatform"
-                    std::string ColliderPlatform = "collPlatform";
+                    std::string MeshPlatform     = Strings[1];
+                    std::string ColliderPlatform = Strings[2];
+                    
+                    int Width   = StringToInt(Strings[3]);
+                    int Height  = StringToInt(Strings[4]);
+                    int SizeMul = StringToInt(Strings[5]);
                     
                     // Find the mesh by name
-                    //MeshPtr = Renderer ->FindMesh( Strings[1] );
-                    MeshPtr = Renderer ->FindMesh( "Platform" );
+                    MeshPtr = Renderer ->FindMesh( MeshPlatform );
                     if (MeshPtr == nullptr) {Msg("Mesh not found"); return;}
                     
+                    
+                    
                     POSITION Position = POSITION(0.0, 0.0, 0.0);
+                    
                     ROTATION Rotation = ROTATION(0.0, 0.0, 0.0);
+                    
                     SCALE    Scale = SCALE(5.0, 5.0, 5.0);
+                    
                     
                     
                     // Find the collision asset
                     SceneManager::PhysicsManagement::CollisionProxy* CollisionProxyPtr = SceneManager::PhysicsManagement::ColliderMgr ->FindProxy( ColliderPlatform );
                     if (CollisionProxyPtr == nullptr) {Msg("Collision proxy not found"); return;}
                     
+                    // Get starting point
+                    Position.x -= StringToDouble(IntToString(Width * SizeMul))  / 2.0f;
+                    Position.y -= StringToDouble(IntToString(Height * SizeMul)) / 2.0f;
                     
                     
-                    int Width  = 25;
-                    int Height = 25;
-                    int Mul    = 50;
+                    
+                    //
+                    // Generate platform area
                     
                     for (int i=0; i < Width; i++) {
                         
-                        double AreaWidth = StringToDouble(IntToString(i * Mul));
+                        double AreaWidth = StringToDouble(IntToString(i * SizeMul));
+                        
                         
                         for (int u=0; u < Height; u++) {
                             
-                            double AreaHeight = StringToDouble(IntToString(u * Mul));
+                            double AreaHeight = StringToDouble(IntToString(u * SizeMul));
+                            
+                            
+                            // Random depth offset
+                            float Depth = StringToFloat(IntToString(Random(1, 100))) * 0.01f;
+                            
+                            
+                            // Generated object position
+                            POSITION FinalPosition = glm::vec3(Position.x + AreaWidth, Position.y + AreaHeight, Position.z + Depth);
+                            
+                            //Rotation.x = (StringToFloat(IntToString(Random(1, 100))) * 0.1f) - (StringToFloat(IntToString(Random(1, 100))) * 0.1f);
+                            //Rotation.y = (StringToFloat(IntToString(Random(1, 100))) * 0.1f) - (StringToFloat(IntToString(Random(1, 100))) * 0.1f);
+                            //Rotation.z = (StringToFloat(IntToString(Random(1, 100))) * 0.1f) - (StringToFloat(IntToString(Random(1, 100))) * 0.1f);
+                            //if (Rotation.x > 360.0) Rotation.x=0.0;
+                            //if (Rotation.y > 360.0) Rotation.y=0.0;
+                            //if (Rotation.z > 360.0) Rotation.z=0.0;
+                            
                             
                             //
                             // Construct an entity
-                            Entity* EntityPtr = Renderer ->CreateEntity(Position.x + AreaWidth, Position.y + AreaHeight, Position.z);
+                            Entity* EntityPtr = Renderer ->CreateEntity(0.0, 0.0, 0.0);
                             
                             EntityPtr ->Rotation = Rotation;
                             EntityPtr ->Scale    = Scale;
                             
-                            EntityPtr ->SetRenderDistance(200.0);
+                            EntityPtr ->SetRenderDistance(900.0);
                             
                             // Attach the mesh asset
                             EntityPtr ->AttachMesh( MeshPtr );
@@ -761,8 +789,46 @@ namespace SceneManager {
                             
                             //
                             // Construct a rigid body
-                            Physics::RigidBody* RigidBody = PhysicsManagement::CreateRigidBody(Position.x + AreaWidth, Position.y + AreaHeight, Position.z);
+                            Physics::Vector3    Position = Physics::Vector3(FinalPosition.x, FinalPosition.y, FinalPosition.z);
+                            Physics::Quaternion Quat     = Physics::Quaternion::identity();
+                            
+                            float Angle = 1.0;
+                            ROTATION Axis = Rotation;
+                            
+                            // Calculate the quaternion
+                            float qx = Axis.x * sin( Angle/2.0 );
+                            float qy = Axis.y * sin( Angle/2.0 );
+                            float qz = Axis.z * sin( Angle/2.0 );
+                            float qw = cos( Angle/2.0 );
+                            
+                            Quat.setAllValues(qx, qy, qz, qw);
+                            
+                            
+                            Physics::Transform BodyTransform = Physics::Transform(Position, Quat);
+                            Physics::RigidBody* RigidBody = PhysicsWorld ->createRigidBody(BodyTransform);
+                            
+                            
+                            // Attach the body to the entity
                             EntityPtr ->AttachedBody = RigidBody;
+                            
+                            
+                            //Physics::RigidBody* RigidBody = PhysicsManagement::CreateRigidBody( FinalPosition.x, FinalPosition.y, FinalPosition.z );
+                            
+                            // Get physical body transform
+                            //Physics::Transform  EntityTransform  = AttachedBody ->getTransform();
+                            //Physics::Quaternion EntityQuaternion = EntityTransform.getOrientation();
+                            
+                            // Sync the entity to the physical body`s position
+                            //Physics::Vector3 EntityPosition = EntityTransform.getPosition();
+                            //this ->Position = glm::vec3(EntityPosition.x, EntityPosition.y, EntityPosition.z);
+                            
+                            //Physics::Vector3 EntityRotation   = EntityQuaternion.getVectorV();
+                            //this ->Rotation = glm::vec3(EntityRotation.x, EntityRotation.y, EntityRotation.z);
+                            
+                            
+                            
+                            
+                            
                             
                             //
                             // Create the collision object

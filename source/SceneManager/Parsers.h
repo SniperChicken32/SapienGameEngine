@@ -3,34 +3,7 @@
 
 namespace SceneManager {
     
-    // Get an asset file`s header name
-    std::string AssetFilePeekHeader(std::string FileName) {
-        
-        std::string Line;
-        std::ifstream FileStream;
-        
-        FileStream.open( FileName );
-        
-        // Check file opened
-        if (FileStream.is_open()) {
-            
-            getline(FileStream, Line);
-            
-            // Explode the string
-            int i=0; std::string Strings[25];
-            std::vector<std::string> Array = StringExplode(Line, ' ');
-            for (std::vector<std::string>::iterator it = Array.begin(); it != Array.end(); ++it) {std::string String = *it; Strings[i] = String; i++;}
-            
-            FileStream.close();
-            
-            // Return asset header name
-            return Strings[1];
-            
-        }
-        
-        return "";
-    }
-    
+    // Back-end scene file parsing
     namespace AssetParsers {
         
         // Scene string parsers

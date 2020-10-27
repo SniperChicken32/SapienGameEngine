@@ -93,7 +93,7 @@ void Sandbox :: Shutdown(void) {
 void Sandbox :: Create(void) {
     
     // Load the main scene
-    SceneManager::Scene* SceneMain = SceneManager::ResourceManagement::Loaders::LoadScene("data/main");
+    SceneManager::Scene* SceneMain = SceneManager::ResourceManagement::LoadScene("data/main");
     
     // Update player controller settings
     if (Renderer ->CurrentCamera != nullptr) {

@@ -110,7 +110,6 @@ namespace SceneManager {
                             }
                             
                             this ->DataBlocks.emplace(BlockName, BlockString);
-                            
                         }
                         
                         std::vector<std::string> ValueList;
@@ -121,7 +120,9 @@ namespace SceneManager {
                             
                         }
                         
-                        AssetData.emplace(ArrayData[0], ValueList);
+                        this ->AssetData.insert(std::pair<std::string, std::vector<std::string>>(ArrayData[0], ValueList));
+                        
+                        //AssetData.emplace(ArrayData[0], ValueList);
                         
                     }
                     
@@ -176,9 +177,11 @@ namespace SceneManager {
             
         };
         
-        // Object loaders
+        
+        /** Asset loaders.*/
         namespace Loaders {
             
+            /** Loads a camera object into the render system.*/
             Camera* LoadCamera(std::string FilePath) {
                 
                 // Load and check the asset
@@ -277,6 +280,7 @@ namespace SceneManager {
                 return CameraPtr;
             }
             
+            /** Loads a light object into the render system.*/
             Light* LoadLight(std::string FilePath) {
                 
                 // Load and check the asset
@@ -328,6 +332,7 @@ namespace SceneManager {
                 return LightPtr;
             }
             
+            /** Loads a mesh model into the render system.*/
             Mesh* LoadMesh(std::string FilePath) {
                 
                 // Create the asset
@@ -413,6 +418,7 @@ namespace SceneManager {
                 return MeshPtr;
             }
             
+            /** Loads a material object into the render system.*/
             Material* LoadMaterial(std::string FilePath) {
                 
                 // Load and check the asset
@@ -758,6 +764,7 @@ namespace SceneManager {
                 
             }
             
+            /** Loads a shader object into the render system.*/
             Shader* LoadShader(std::string FilePath) {
                 
                 // Load and check the asset
@@ -874,6 +881,7 @@ namespace SceneManager {
                 return ShaderPtr;
             }
             
+            /** Loads an actor object into the AI system.*/
             Actor* LoadActor(std::string FilePath) {
                 
                 // Load and check the asset
@@ -974,75 +982,71 @@ namespace SceneManager {
                 return ActorPtr;
             }
             
-            Scene* LoadScene(std::string FilePath) {
-                
-                // Load and check the asset
-                SceneManager::ResourceManagement::AssetLoader AssetLoader( FilePath + strings::ExtScene );
-                if (!AssetLoader.GetAssetState()) {
-                    
-                    LogWrite(strings::LogStringError + strings::AssetTypeScene + FilePath);
-                    
-                    return nullptr;
-                }
-                
-                // If the asset already exists, add the scene to the current scene graph
-                Scene* ScenePtr = SceneMgr ->FindScene( AssetLoader.GetAssetName() );
-                if (ScenePtr == nullptr) {
-                    
-                    // Create the asset
-                    ScenePtr = SceneMgr ->CreateScene();
-                    
-                    // Name the asset
-                    ScenePtr ->Name = AssetLoader.GetAssetName();
-                    
-                }
-                
-                
-                LogWrite(strings::AddSymbol + strings::SpaceSingle + strings::AssetTypeScene + AssetLoader.GetAssetName());
-                
-                //
-                // Process scene definitions
-                for (std::map<std::string, std::vector<std::string>>::iterator it = AssetLoader.AssetData.begin(); it != AssetLoader.AssetData.end(); it++) {
-                    
-                    // Get the path to the definition/location file
-                    std::string FilePath = it ->first;
-                    
-                    if (StringFind(strings::ExtDefinition, FilePath)) {
-                        
-                        // Load the definition file
-                        SceneManager::AssetParsers::LoadDefinitions( FilePath );
-                        
-                        ScenePtr ->DefinitionsFiles.push_back( FilePath );
-                        
-                    }
-                    
-                }
-                
-                //
-                // Process scene entity instances
-                for (std::map<std::string, std::vector<std::string>>::iterator it = AssetLoader.AssetData.begin(); it != AssetLoader.AssetData.end(); it++) {
-                    
-                    // Get the path to the definition/location file
-                    std::string FilePath = it ->first;
-                    
-                    if (StringFind(strings::ExtLocation, FilePath)) {
-                        
-                        // Load the object location file
-                        SceneManager::AssetParsers::LoadLocations( ScenePtr, FilePath );
-                        
-                        ScenePtr ->LocationsFiles.push_back( FilePath );
-                        
-                    }
-                    
-                }
-                
-                return ScenePtr;
-            }
-            
         }
         
+        /** Loads a scene onto the scene graph.*/
+        Scene* LoadScene(std::string FilePath) {
+            
+            // Check the assets header
+            std::string AssetName = AssetFilePeekHeader( FilePath + strings::ExtScene );
+            
+            Scene* ScenePtr = SceneMgr ->FindScene( AssetName );
+            if (ScenePtr == nullptr) {
+                
+                // Create the asset
+                ScenePtr = SceneMgr ->CreateScene();
+                
+                // Name the asset
+                ScenePtr ->Name = AssetName;
+                
+            }
+            
+            // Open the scene file
+            std::ifstream AssetFile;
+            
+            AssetFile.open( FilePath + strings::ExtScene );
+            if (AssetFile.is_open()) {
+                
+                std::string String;
+                
+                while (getline(AssetFile, String)) {
+                    
+                    if (String == "") continue;
+                    if (StringFind("//", String)) continue;
+                    
+                    
+                    // Check definition extention
+                    if (StringFind(strings::ExtDefinition, String)) {
+                        
+                        // Load the definition file
+                        SceneManager::AssetParsers::LoadDefinitions( String );
+                        
+                        ScenePtr ->DefinitionsFiles.push_back( String );
+                        
+                        continue;
+                    }
+                    
+                    
+                    // Check location extention
+                    if (StringFind(strings::ExtLocation, String)) {
+                        
+                        // Load the object location file
+                        SceneManager::AssetParsers::LoadLocations( ScenePtr, String );
+                        
+                        ScenePtr ->LocationsFiles.push_back( String );
+                        
+                    }
+                    
+                    
+                }
+                
+                AssetFile.close();
+            }
+            
+            return ScenePtr;
+        }
         
-        // Save the current scene
+        /** Saves any scenes currently loaded into the scene graph.*/
         bool SceneSave(Scene* ScenePtr) {
             
             // Get asset name and file path
@@ -1052,9 +1056,10 @@ namespace SceneManager {
             std::string FilePath;
             std::ofstream FileStream;
             
-            for (std::vector<std::string>::iterator it = ScenePtr ->LocationsFiles.begin(); it != ScenePtr ->LocationsFiles.end(); it++) {
+            // Save objects to the scenes locations file
+            if (ScenePtr ->LocationsFiles.size() > 0) {
                 
-                FilePath = *it;
+                FilePath = ScenePtr ->LocationsFiles[0];
                 
             }
             
@@ -1093,11 +1098,11 @@ namespace SceneManager {
                     std::string Attachemnts = strings::SpaceDouble;
                     
                     // Translation string
-                    Translation += xx + strings::SpaceSingle + yy + strings::SpaceSingle + zz + strings::SpaceSingle;
-                    Translation += yaw + strings::SpaceSingle + pitch + strings::SpaceSingle + roll + strings::SpaceSingle;
+                    Translation += xx    + strings::SpaceSingle + yy     + strings::SpaceSingle + zz    + strings::SpaceSingle;
+                    Translation += yaw   + strings::SpaceSingle + pitch  + strings::SpaceSingle + roll  + strings::SpaceSingle;
                     Translation += width + strings::SpaceSingle + height + strings::SpaceSingle + depth + strings::SpaceSingle;
                     
-                    // Get name
+                    // Get entity name from its mesh
                     std::string Name = EntityPtr ->AttachedMesh ->Name + strings::SpaceDouble;
                     
                     // Add light attachments
@@ -1109,9 +1114,10 @@ namespace SceneManager {
                         
                         Attachemnts += LightName + strings::SpaceSingle;
                         
-                    }Attachemnts += strings::SpaceSingle;
+                    }
                     
                     // Consolidate string and write to the file
+                    Attachemnts += strings::SpaceSingle;
                     FileStream << Name << Translation << ColliderName << Mass << DampLin << DampAng << Attachemnts << std::endl;
                     
                 }

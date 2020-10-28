@@ -87,19 +87,19 @@ namespace SceneManager {
                 // Mesh > Material > Shader
                 if (Strings[0] == "define_mesh") {
                     
-                    ResourceManagement::Loaders::LoadMesh( Strings[1] );
+                    ResourceManagement::LoadMesh( Strings[1] );
                     
                     return;
                 }
                 if (Strings[0] == "define_material") {
                     
-                    ResourceManagement::Loaders::LoadMaterial( Strings[1] );
+                    ResourceManagement::LoadMaterial( Strings[1] );
                     
                     return;
                 }
                 if (Strings[0] == "define_shader") {
                     
-                    ResourceManagement::Loaders::LoadShader( Strings[1] );
+                    ResourceManagement::LoadShader( Strings[1] );
                     
                     return;
                 }
@@ -154,13 +154,13 @@ namespace SceneManager {
                 }
                 if (Strings[0] == "define_light") {
                     
-                    ResourceManagement::Loaders::LoadLight( Strings[1] );
+                    ResourceManagement::LoadLight( Strings[1] );
                     
                     return;
                 }
                 if (Strings[0] == "define_camera") {
                     
-                    Camera* CameraPtr = ResourceManagement::Loaders::LoadCamera( Strings[1] );
+                    Camera* CameraPtr = ResourceManagement::LoadCamera( Strings[1] );
                     if (CameraPtr == nullptr) return;
                     
                     // Bind the camera to the render system
@@ -319,7 +319,7 @@ namespace SceneManager {
                     if (ActorPtr == nullptr) {
                         
                         ActorPtr = ActorAI::AI ->CreateActor();
-                        ResourceManagement::Loaders::LoadActor( Strings[1] );
+                        ResourceManagement::LoadActor( Strings[1] );
                         
                     }
                     
@@ -695,7 +695,7 @@ namespace SceneManager {
                     
                     ROTATION Rotation = ROTATION(0.0, 0.0, 0.0);
                     
-                    SCALE    Scale = SCALE(5.0, 5.0, 5.0);
+                    SCALE    Scale = SCALE(10.0, 10.0, 10.0);
                     
                     
                     
@@ -723,8 +723,9 @@ namespace SceneManager {
                             
                             
                             // Random depth offset
-                            float Depth = StringToFloat(IntToString(Random(1, 100))) * 0.01f;
-                            
+                            //float DepthMul = 10.01f;
+                            //float Depth = StringToFloat(IntToString(Random(1, 100))) * DepthMul;
+                            float Depth = 0.0f;
                             
                             // Generated object position
                             POSITION FinalPosition = glm::vec3(Position.x + AreaWidth, Position.y + AreaHeight, Position.z + Depth);
@@ -744,7 +745,7 @@ namespace SceneManager {
                             EntityPtr ->Rotation = Rotation;
                             EntityPtr ->Scale    = Scale;
                             
-                            EntityPtr ->SetRenderDistance(900.0);
+                            EntityPtr ->SetRenderDistance(1000.0);
                             
                             // Attach the mesh asset
                             EntityPtr ->AttachMesh( MeshPtr );

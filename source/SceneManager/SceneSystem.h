@@ -26,7 +26,6 @@ namespace SceneManager {
         
         /** Adds an entity object to the scene.*/
         void AddEntity(Entity* EntityPtr) {EntityList.push_back(EntityPtr);}
-        
         /** Removes an entity object from the scene.*/
         bool RemoveEntity(Entity* EntityPtr) {
             
@@ -42,7 +41,6 @@ namespace SceneManager {
             
             return false;
         }
-        
         /** Destroys and removes an entity object from the scene.*/
         bool DestroyEntity(Entity* EntityPtr) {
             
@@ -63,7 +61,6 @@ namespace SceneManager {
         
         /** Adds an actor object to the scene.*/
         void AddActor(Actor* ActorPtr) {ActorList.push_back(ActorPtr);}
-        
         /** Removes an actor object from the scene.*/
         bool RemoveActor(Actor* ActorPtr) {
             
@@ -79,7 +76,6 @@ namespace SceneManager {
             
             return false;
         }
-        
         /** Destroys and removes an actor object from the scene.*/
         bool DestroyActor(Actor* ActorPtr) {
             
@@ -148,7 +144,6 @@ namespace SceneManager {
             }
             
         }
-        
         /** Deactivates all objects in the scene.*/
         void Deactivate(void) {
             
@@ -201,7 +196,7 @@ namespace SceneManager {
         }
         
         /** Destroys all objects in the scene.*/
-        void Clear(void) {
+        void DestroyAll(void) {
             
             // Clear entities
             for (std::vector<Entity*>::iterator it = EntityList.begin(); it != EntityList.end(); ++it) {
@@ -224,12 +219,10 @@ namespace SceneManager {
             EntityList.clear();
             ActorList.clear();
             
-            
         }
         
         /** Returns the number of entity objects in the scene.*/
         int GetEntityNumber(void) {return EntityList.size();}
-        
         /** Returns the number of actor objects in the scene.*/
         int GetActorNumber(void) {return ActorList.size();}
         
@@ -308,7 +301,7 @@ namespace SceneManager {
             
             if (ScenePtr == SceneListPtr) {
                 
-                ScenePtr ->Clear();
+                ScenePtr ->DestroyAll();
                 
                 SceneList.erase(it);
                 
@@ -328,7 +321,7 @@ namespace SceneManager {
             
             Scene* ScenePtr = *it;
             
-            ScenePtr ->Clear();
+            ScenePtr ->DestroyAll();
             
         }
         

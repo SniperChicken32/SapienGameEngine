@@ -7,15 +7,6 @@
 // Sandbox layer
 #include "sandbox.h"
 
-
-float RandomF(void) {
-    
-    int Value = rand() % 100 + 1;
-    
-    return StringToFloat( IntToString( Value ) ) * 0.1;
-}
-
-
 //
 // Windows entry point
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
@@ -153,7 +144,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     
     // Initiate sandbox and the universal timer
     SandboxApp = new Sandbox();
-    UpdateTimer = new Timer;
+    UpdateTimer = new Timer();
     
     
     // Set the render target

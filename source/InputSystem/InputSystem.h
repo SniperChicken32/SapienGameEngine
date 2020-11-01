@@ -3,7 +3,7 @@
 #ifndef INPUT_SYSTEM_
 #define INPUT_SYSTEM_
 
-#include "InputSystem/Keys.h"
+#include "Keys.h"
 
 void      CursorSetPosition(int xx, int yy) {SetCursorPos( xx, yy );}
 glm::vec2 CursorGetPosition(void) {

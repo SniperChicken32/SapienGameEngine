@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <algorithm>
 //#include <thread>
 //#include <time.h>
 
@@ -24,7 +25,6 @@
 #include "std/types.h"
 #include "std/logging.h"
 #include "std/math.h"
-
 
 // Input system
 #include "InputSystem/InputSystem.h"

@@ -30,16 +30,16 @@ std::string AssetFilePeekHeader(std::string FileName) {
 }
 
 // Scene object manager
-#include "SceneManager/SceneSystem.h"
+#include "SceneSystem.h"
 
 // Resource loader and management
-#include "SceneManager/ResourceManager.h"
+#include "ResourceManager.h"
 
 // Physics proxy manager
-#include "SceneManager/PhysicsManager.h"
+#include "PhysicsManager.h"
 
 // Scene file parsers
-#include "SceneManager/Parsers.h"
+#include "Parsers.h"
 
 #endif
 

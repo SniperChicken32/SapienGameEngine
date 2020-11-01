@@ -16,8 +16,8 @@ const std::string EVENT_LOG_FILENAME = "event_log.txt";
 
 //
 // Console window output
-#define  SHOW_CONSOLE_
-#define  CONSOLE_RENDER_TIMING_
+//#define  SHOW_CONSOLE_
+//#define  CONSOLE_RENDER_TIMING_
 //#define  CONSOLE_CHECK_ALLOCATIONS_
 //#define  CONSOLE_CHECK_COLLISIONS_
 
@@ -57,7 +57,7 @@ const std::string EVENT_LOG_FILENAME = "event_log.txt";
 #endif
 
 // Engine plug-ins
-#include "Configuration/Plugins.h"
+#include "Plugins.h"
 
 // Constant string
 #include "ConstStrings.h"

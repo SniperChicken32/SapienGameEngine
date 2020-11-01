@@ -2,7 +2,7 @@
 // String functions
 
 /** Find a strings within a given string.*/
-bool   StringFind(std::string SubString, std::string String) {
+bool StringFind(std::string SubString, std::string String) {
     if (strstr ( String.c_str(), SubString.c_str() ) != NULL) {return 1;}
     return 0;
 }

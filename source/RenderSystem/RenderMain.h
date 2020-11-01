@@ -4,13 +4,13 @@
 #ifndef RENDER_SYSTEM_
 #define RENDER_SYSTEM_
 
-#include "RenderSystem/Enumerators.h"
+#include "Enumerators.h"
 
 // OpenGL base library
-#include "RenderSystem/RenderLibrary.h"
+#include "RenderLibrary.h"
 
 // Rendering system
-#include "RenderSystem/RenderSystem.h"
+#include "RenderSystem.h"
 
 #endif
 

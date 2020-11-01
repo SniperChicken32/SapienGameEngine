@@ -678,12 +678,20 @@ namespace SceneManager {
                 // Terrain generation
                 if (Strings[0] == "generate"){
                     
+                    //
+                    //  MeshName  ColliderName  Width Height SizeMultiplier  ScaleX ScaleY ScaleZ
+                    //
+                    
                     std::string MeshPlatform     = Strings[1];
                     std::string ColliderPlatform = Strings[2];
                     
                     int Width   = StringToInt(Strings[3]);
                     int Height  = StringToInt(Strings[4]);
                     int SizeMul = StringToInt(Strings[5]);
+                    
+                    float ScaleX = StringToFloat(Strings[6]);
+                    float ScaleY = StringToFloat(Strings[7]);
+                    float ScaleZ = StringToFloat(Strings[8]);
                     
                     // Find the mesh by name
                     MeshPtr = Renderer ->FindMesh( MeshPlatform );
@@ -695,7 +703,7 @@ namespace SceneManager {
                     
                     ROTATION Rotation = ROTATION(0.0, 0.0, 0.0);
                     
-                    SCALE    Scale = SCALE(10.0, 10.0, 10.0);
+                    SCALE    Scale = SCALE(ScaleX, ScaleY, ScaleZ);
                     
                     
                     

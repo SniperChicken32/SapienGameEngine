@@ -8,10 +8,10 @@
 #define ANIMATION_RUN    3
 #define ANIMATION_DEATH  4
 
-#include "ActorSystem/Actor.h"
+#include "Actor.h"
 
-#include "ActorSystem/AnimationCycles.h"
-#include "ActorSystem/DecisionProcessing.h"
+#include "AnimationCycles.h"
+#include "DecisionProcessing.h"
 
-#include "ActorSystem/ActorSystem.h"
+#include "ActorSystem.h"
 

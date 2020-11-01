@@ -13,15 +13,18 @@ struct   VIEWPORT   {int x, y, w, h;};
 #define  SCALE      glm::vec3
 
 // Render assets
-#include "RenderSystem/Assets/Light.h"
-#include "RenderSystem/Assets/Camera.h"
+#include "Assets/Light.h"
+#include "Assets/Camera.h"
 
-#include "RenderSystem/Assets/Shader.h"
-#include "RenderSystem/Assets/Material.h"
-#include "RenderSystem/Assets/Mesh.h"
+#include "Assets/Shader.h"
+#include "Assets/Material.h"
+#include "Assets/Mesh.h"
 
 // Entity
-#include "RenderSystem/Assets/Entity.h"
+#include "Assets/Entity.h"
+
+// Sorting strategy
+bool SortMethod(int i, int j) { return i > j; }
 
 class RenderSystem {
     
@@ -1306,6 +1309,7 @@ void RenderSystem :: RenderPipeline(void) {
         
         // Get the pointer to the next queue group
         std::vector<Entity*> ListPtr = *QueueList[i];
+        std::map<double, Entity*> RenderSort;
         
         // Render the entities in the queue
         for (std::vector<Entity*>::iterator it = ListPtr.begin(); it != ListPtr.end(); ++it) {
@@ -1316,14 +1320,14 @@ void RenderSystem :: RenderPipeline(void) {
             glm::vec3 PointB = glm::vec3(CurrentEntity ->Position.x, CurrentEntity ->Position.z, CurrentEntity ->Position.y);
             
             // Check entity distance from camera
-            double CurrentDistance = glm::distance( PointB, PointA);
+            double CurrentDistance = glm::distance( PointB, PointA );
             
             if (CurrentEntity ->RenderDistance > CurrentDistance) {
                 
                 //
-                // Render the entity
+                // Sort the entities by distance
                 
-                this ->RenderEntity( CurrentEntity, ProjectionMatrix, DrawCallCount );
+                RenderSort.emplace(CurrentDistance, CurrentEntity);
                 
             } else {
                 
@@ -1337,6 +1341,22 @@ void RenderSystem :: RenderPipeline(void) {
                     CurrentEntity ->Deactivate();
                     
                 }
+                
+            }
+            
+            //
+            // Sort the entities
+            
+            //std::sort(RenderSort[0], RenderSort[1], SortMethod);
+            
+            //
+            // Render the entity
+            for (std::map<double, Entity*>::iterator it = RenderSort.begin(); it != RenderSort.end(); ++it) {
+                
+                double  Distance  = it ->first;
+                Entity* EntityPtr = it ->second;
+                
+                this ->RenderEntity( EntityPtr, ProjectionMatrix, DrawCallCount );
                 
             }
             

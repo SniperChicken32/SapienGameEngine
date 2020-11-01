@@ -18,7 +18,7 @@ namespace SceneManager {
         class AssetLoader {
             
             /** 
-            The asset files header should be defined
+            The asset files header must be defined
             in the following way:
             
             define_asset YourAssetName
